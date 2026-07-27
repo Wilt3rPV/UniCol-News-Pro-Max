@@ -543,12 +543,22 @@
       }
 
       @keyframes modalIn {
+        from { opacity: 0; transform: translateX(-50%) scale(0.92); }
+        to   { opacity: 1; transform: translateX(-50%) scale(1); }
+      }
+
+      @keyframes modalOut {
+        from { opacity: 1; transform: translateX(-50%) scale(1); }
+        to   { opacity: 0; transform: translateX(-50%) scale(0.92); }
+      }
+
+      /* @keyframes modalIn {
         to { opacity: 1; transform: translateX(-50%) scale(1); }
       }
 
       @keyframes modalOut {
         to { opacity: 0; transform: translateX(-50%) scale(0.92); }
-      }
+      } */
 
       .post-modal-close {
         position: absolute;

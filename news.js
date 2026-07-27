@@ -556,7 +556,7 @@ function closePostModal() {
     modal.classList.add("hidden");
     document.documentElement.classList.remove("modal-open");
     document.body.classList.remove("modal-open");
-  }, 220);
+  }, 200);
 }
 
 function editPost(id) {
