@@ -462,8 +462,8 @@ async function showPostModal(postId) {
 
     setTimeout(() => {
       const adminButtons = isAdmin ? `
-        <button onclick="editPost(${post.id})">Edit Post</button>
-        <button class="delete-btn" onclick="deletePost(${post.id})">Delete Post</button>
+        <button class="modal-action-btn" onclick="editPost(${post.id})">Edit Post</button>
+        <button class="modal-action-btn delete-btn" onclick="deletePost(${post.id})">Delete Post</button>
       ` : '';
 
       const bannerHtml = post.banner ?
@@ -512,7 +512,7 @@ async function showPostModal(postId) {
   }
 }
 
-async function deleteNewsPost(id) {
+async function deletePost(id) {
   if (!isAdmin) {
     showError('Admin access required');
     return;
@@ -810,11 +810,11 @@ async function handleLogout() {
 }
 
 function goToLogin() {
-  window.location.href = 'index.html';
+  window.location.href = 'accountcreation.html';
 }
 
 function continuetoMenu() {
-  window.location.href = 'menu.html';
+  window.location.href = 'index.html';
 }
 
 window.addEventListener('pageshow', (event) => {

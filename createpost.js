@@ -154,24 +154,28 @@ async function loadEditPost(id, preview) {
         preview.style.display = "block";
       }
 
-      if (select && editPost.college) {
-        select.value = editPost.college;
-        select.disabled = true;
-      }
+      // FIX: use document.getElementById directly
+      const collegeSel = document.getElementById("collegeSelect");
+      if (collegeSel && editPost.college) {
+        collegeSel.value = editPost.college;
+        collegeSel.disabled = true;
 
-      const courseSelect = document.getElementById("courseSelect");
-      if (courseSelect && editPost.course) {
-        // Re-populate courses for this college first
-        if (campusDepartments[editPost.college]) {
-          courseSelect.innerHTML = '<option value="">NONE...</option>';
+        // Repopulate courses for this college BEFORE setting course value
+        const courseSel = document.getElementById("courseSelect");
+        if (courseSel && campusDepartments[editPost.college]) {
+          courseSel.innerHTML = '<option value="">NONE...</option>';
           campusDepartments[editPost.college].forEach(dept => {
             const option = document.createElement("option");
             option.value = dept.value;
             option.textContent = dept.label;
-            courseSelect.appendChild(option);
+            courseSel.appendChild(option);
           });
+
+          // Set course if it exists
+          if (editPost.course) {
+            courseSel.value = editPost.course;
+          }
         }
-        courseSelect.value = editPost.course;
       }
     }
   } catch (err) {

@@ -198,8 +198,8 @@ async function loadPost() {
 
 function renderPost(post) {
   const adminButtons = isAdmin ? `
-    <button onclick="editPost(${post.id})">Edit Post</button>
-    <button class="delete-btn" onclick="deletePost(${post.id})">Delete Post</button>
+    <button class="modal-action-btn" onclick="editPost(${post.id})">Edit Post</button>
+    <button class="modal-action-btn delete-btn" onclick="deletePost(${post.id})">Delete Post</button>
   ` : '';
   
   // Banner with click to view full size

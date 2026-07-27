@@ -312,6 +312,37 @@
         cursor: not-allowed;
       }
 
+
+      /* Modal admin buttons — same style as close button */
+      .modal-action-btn {
+        padding: 10px 20px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        background: #f5f5f5;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 20px;
+        margin-right: 10px;
+        color: #333;
+      }
+
+      .modal-action-btn:hover {
+        background: #eee;
+        transform: translateY(-2px);
+      }
+
+      .modal-action-btn.delete-btn {
+        background: rgba(255, 100, 100, 0.12);
+        border-color: rgba(255, 150, 150, 0.4);
+        color: #c0392b;
+      }
+
+      .modal-action-btn.delete-btn:hover {
+        background: rgba(255, 100, 100, 0.22);
+      }
+
       /* ========================================
          RIGHT - Calendar (modernized from U3, U2 layout)
          ======================================== */

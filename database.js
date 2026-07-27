@@ -2,11 +2,11 @@
 // UNI-COL NEWS - GOOGLE SHEETS API CLIENT
 // ============================================
 
-// PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
-const API_URL = 'https://script.google.com/macros/s/AKfycbyl4cDhBqtSTgWEHWPkmrKXhhXH0r6_ay8s2SjYyBFAMGb_bo8SWqjV9cj5znoUHhHp/exec';
+// PASTE YOUR REDEPLOYED APPS SCRIPT WEB APP URL HERE
+const API_URL = 'https://script.google.com/macros/s/AKfycby1WM-iBzqsLnKiXSqQkUuhxn_TrsxYkh9UAGMhAxkAmkicl4XSMyAXMTBK6m-39rKV/exec';
 
 // =========================
-// AUTH
+// AUTH (Google Sheets backed)
 // =========================
 let currentUser = null;
 let isAdmin = false;
@@ -26,18 +26,27 @@ async function checkAuth() {
 }
 
 async function signIn(email, password) {
-  if (email === 'admin' && password === 'admin123') {
-    currentUser = { email };
-    isAdmin = true;
-    localStorage.setItem('unicol_admin', JSON.stringify({ email }));
-    updateUIForAuth();
-    return { user: currentUser };
+  const result = await apiPost({ action: 'adminLogin', email, password });
+
+  if (result.error) {
+    throw new Error(result.error.message || 'Invalid credentials');
   }
-  throw new Error('Invalid credentials');
+
+  currentUser = result.data.user;
+  isAdmin = result.data.isAdmin;
+  localStorage.setItem('unicol_admin', JSON.stringify({ email: currentUser.email }));
+  updateUIForAuth();
+  return { user: currentUser };
 }
 
 async function signUp(email, password) {
-  throw new Error('Registration disabled in demo mode');
+  const result = await apiPost({ action: 'adminRegister', email, password });
+
+  if (result.error) {
+    throw new Error(result.error.message || 'Registration failed');
+  }
+
+  return result.data;
 }
 
 async function signOut() {
@@ -77,12 +86,10 @@ async function apiPost(body) {
   console.log('[API POST]', API_URL, body);
 
   try {
-    // NO headers — browser sends as text/plain, avoiding CORS preflight
     const res = await fetch(API_URL, {
       method: 'POST',
       body: JSON.stringify(body)
     });
-
     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     const json = await res.json();
     console.log('[API POST response]', json);
@@ -215,6 +222,225 @@ async function updateCalendarRow(id, updates) {
 async function deleteCalendarRow(id) {
   await apiPost({ action: 'deleteCalendar', id });
 }
+
+
+// // ============================================
+// // UNI-COL NEWS - GOOGLE SHEETS API CLIENT
+// // ============================================
+
+// // PASTE YOUR GOOGLE APPS SCRIPT WEB APP URL HERE
+// const API_URL = 'https://script.google.com/macros/s/AKfycbyl4cDhBqtSTgWEHWPkmrKXhhXH0r6_ay8s2SjYyBFAMGb_bo8SWqjV9cj5znoUHhHp/exec';
+
+// // =========================
+// // AUTH
+// // =========================
+// let currentUser = null;
+// let isAdmin = false;
+
+// async function checkAuth() {
+//   const adminData = localStorage.getItem('unicol_admin');
+//   if (adminData) {
+//     const parsed = JSON.parse(adminData);
+//     currentUser = { email: parsed.email };
+//     isAdmin = true;
+//   } else {
+//     currentUser = null;
+//     isAdmin = false;
+//   }
+//   updateUIForAuth();
+//   return currentUser;
+// }
+
+// async function signIn(email, password) {
+//   if (email === 'admin' && password === 'admin123') {
+//     currentUser = { email };
+//     isAdmin = true;
+//     localStorage.setItem('unicol_admin', JSON.stringify({ email }));
+//     updateUIForAuth();
+//     return { user: currentUser };
+//   }
+//   throw new Error('Invalid credentials');
+// }
+
+// async function signUp(email, password) {
+//   throw new Error('Registration disabled in demo mode');
+// }
+
+// async function signOut() {
+//   localStorage.removeItem('unicol_admin');
+//   currentUser = null;
+//   isAdmin = false;
+//   updateUIForAuth();
+// }
+
+// function updateUIForAuth() {
+//   window.dispatchEvent(new CustomEvent('authStateChanged', {
+//     detail: { user: currentUser, isAdmin }
+//   }));
+// }
+
+// // =========================
+// // API HELPERS (with debug logging)
+// // =========================
+// async function apiGet(params) {
+//   const qs = new URLSearchParams(params).toString();
+//   const url = `${API_URL}?${qs}`;
+//   console.log('[API GET]', url);
+
+//   try {
+//     const res = await fetch(url);
+//     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+//     const json = await res.json();
+//     console.log('[API GET response]', json);
+//     return json;
+//   } catch (err) {
+//     console.error('[API GET error]', err);
+//     return { data: null, error: err.message };
+//   }
+// }
+
+// async function apiPost(body) {
+//   console.log('[API POST]', API_URL, body);
+
+//   try {
+//     // NO headers — browser sends as text/plain, avoiding CORS preflight
+//     const res = await fetch(API_URL, {
+//       method: 'POST',
+//       body: JSON.stringify(body)
+//     });
+
+//     if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+//     const json = await res.json();
+//     console.log('[API POST response]', json);
+//     return json;
+//   } catch (err) {
+//     console.error('[API POST error]', err);
+//     return { data: null, error: err.message };
+//   }
+// }
+
+// // =========================
+// // DB BUILDER
+// // =========================
+// const db = {
+//   from: (table) => createBuilder(table),
+//   rpc: async () => ({ data: null, error: { message: 'RPC not supported' } })
+// };
+
+// function createBuilder(table) {
+//   let filters = {};
+//   let orderCol = null;
+//   let orderAsc = true;
+//   let isSingle = false;
+//   let insertRows = null;
+//   let updateData = null;
+//   let deleteMode = false;
+
+//   const builder = {
+//     select: () => builder,
+//     eq: (field, value) => { filters[field] = value; return builder; },
+//     order: (col, opts) => { orderCol = col; orderAsc = opts?.ascending !== false; return builder; },
+//     single: () => { isSingle = true; return builder; },
+
+//     insert: (rows) => { insertRows = rows; return builder; },
+//     update: (data) => { updateData = data; return builder; },
+//     delete: () => { deleteMode = true; return builder; },
+
+//     then: (onResolve, onReject) => {
+//       return runQuery({ table, filters, orderCol, orderAsc, isSingle, insertRows, updateData, deleteMode })
+//         .then(onResolve, onReject);
+//     }
+//   };
+
+//   return builder;
+// }
+
+// async function runQuery({ table, filters, orderCol, orderAsc, isSingle, insertRows, updateData, deleteMode }) {
+//   console.log('[DB Query]', { table, filters, orderCol, orderAsc, isSingle, insertRows, updateData, deleteMode });
+
+//   try {
+//     if (table === 'posts') {
+//       if (insertRows && insertRows.length > 0) {
+//         return await apiPost({ action: 'createPost', post: insertRows[0] });
+//       }
+
+//       if (updateData) {
+//         if (!filters.id) return { data: null, error: { message: 'Update requires .eq("id", value)' } };
+//         return await apiPost({ action: 'updatePost', id: filters.id, updates: updateData });
+//       }
+
+//       if (deleteMode) {
+//         if (!filters.id) return { data: null, error: { message: 'Delete requires .eq("id", value)' } };
+//         return await apiPost({ action: 'deletePost', id: filters.id });
+//       }
+
+//       const params = { action: 'getPosts' };
+//       if (filters.college) params.college = filters.college;
+//       if (filters.year)    params.year = String(filters.year);
+//       if (filters.course)  params.course = filters.course;
+//       if (filters.search)  params.search = filters.search;
+//       if (filters.id) {
+//         params.id = filters.id;
+//         params.single = 'true';
+//       }
+//       if (orderCol) {
+//         params.order = orderCol;
+//         params.asc = String(orderAsc);
+//       }
+
+//       return await apiGet(params);
+//     }
+
+//     if (table === 'calendar') {
+//       if (insertRows && insertRows.length > 0) {
+//         return await apiPost({ action: 'createCalendar', row: insertRows[0] });
+//       }
+
+//       if (updateData) {
+//         if (!filters.id) return { data: null, error: { message: 'Update requires .eq("id", value)' } };
+//         return await apiPost({ action: 'updateCalendar', id: filters.id, updates: updateData });
+//       }
+
+//       if (deleteMode) {
+//         if (!filters.id) return { data: null, error: { message: 'Delete requires .eq("id", value)' } };
+//         return await apiPost({ action: 'deleteCalendar', id: filters.id });
+//       }
+
+//       const params = { action: 'getCalendar' };
+//       if (filters.college) params.college = filters.college;
+
+//       return await apiGet(params);
+//     }
+
+//     return { data: null, error: { message: 'Unknown table: ' + table } };
+
+//   } catch (err) {
+//     console.error('[DB Query error]', err);
+//     return { data: null, error: { message: err.message } };
+//   }
+// }
+
+// // =========================
+// // DIRECT CALENDAR API
+// // =========================
+// async function fetchCalendar(college) {
+//   const result = await apiGet({ action: 'getCalendar', college });
+//   return result.data || [];
+// }
+
+// async function createCalendarRow(row) {
+//   const result = await apiPost({ action: 'createCalendar', row });
+//   return result.data ? result.data[0] : row;
+// }
+
+// async function updateCalendarRow(id, updates) {
+//   const result = await apiPost({ action: 'updateCalendar', id, updates });
+//   return result.data ? result.data[0] : updates;
+// }
+
+// async function deleteCalendarRow(id) {
+//   await apiPost({ action: 'deleteCalendar', id });
+// }
 
 // // ============================================
 // // UNI-COL NEWS - GOOGLE SHEETS API CLIENT
