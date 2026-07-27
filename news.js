@@ -3,6 +3,7 @@ const selectedCollege = params.get("college");
 
 const container = document.getElementById('news-container');
 const searchInput = document.getElementById("searchInput");
+const monthFilter = document.getElementById("monthFilter");
 const yearFilter = document.getElementById("yearFilter");
 const courseFilter = document.getElementById("courseFilter");
 const paginationContainer = document.getElementById("pagination");
@@ -567,6 +568,7 @@ function editPost(id) {
 // ============================================================
 function applyAllFilters() {
   const selectedYear = yearFilter ? yearFilter.value : "all";
+  const selectedMonth = monthFilter ? monthFilter.value : "all";
   const selectedCourse = courseFilter ? courseFilter.value : "all";
   const searchText = searchInput ? searchInput.value.trim().toLowerCase() : "";
 
@@ -576,14 +578,28 @@ function applyAllFilters() {
     finalPosts = finalPosts.filter(post => String(getPostYear(post)) === selectedYear);
   }
 
+  if (selectedMonth !== "all") {
+    finalPosts = finalPosts.filter(post => getPostMonth(post) === selectedMonth);
+  }
+
   if (selectedCourse !== "all") {
-    finalPosts = finalPosts.filter(post => post.course === selectedCourse);
+    finalPosts = finalPosts.filter(post => {
+      const postCourse = String(post.course || "").toLowerCase().trim();
+      return postCourse === selectedCourse.toLowerCase();
+    });
   }
 
   if (searchText !== "") {
     finalPosts = finalPosts.filter(post =>
       String(post.title || "").toLowerCase().includes(searchText)
     );
+  }
+
+  if (monthFilter) {
+    monthFilter.addEventListener("change", () => {
+      currentPage = 1;
+      applyAllFilters();
+    });
   }
 
   filteredPosts = finalPosts;
@@ -630,6 +646,20 @@ function getPostYear(post) {
   if (post.year) return post.year;
   const date = new Date(post.date);
   return date.getFullYear();
+}
+
+function getPostMonth(post) {
+  if (post.month) return String(post.month).padStart(2, '0');
+  const date = new Date(post.date);
+  if (!isNaN(date)) {
+    return String(date.getMonth() + 1).padStart(2, '0');
+  }
+  // Fallback: try parsing YYYY-MM-DD string directly
+  if (post.date && String(post.date).includes('-')) {
+    const parts = String(post.date).split('-');
+    if (parts.length >= 2) return parts[1];
+  }
+  return null;
 }
 
 function populateYearFilter() {
