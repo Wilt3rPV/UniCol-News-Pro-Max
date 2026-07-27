@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UniCol News</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="database.js"></script>
+    <style>
+      * { 
+        box-sizing: border-box; 
+        margin: 0; 
+        padding: 0; 
+      }
+
+      html, body {
+        min-height: 100vh;
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: #f5f5f5;
+      }
+
+      body {
+        opacity: 0;
+        transform: translateY(-30px);
+        transition: opacity 0.4s ease-out, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      body.loaded {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* =========================
+         HEADER / LOGO SECTION
+         ========================= */
+      .menu-header {
+        text-align: center;
+        padding: 10px 20px 0px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        position: relative;
+        overflow: hidden;
+      }
+
+      .menu-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.5;
+      }
+
+      .menu-logo {
+        width: 280px;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+        filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
+        position: relative;
+        z-index: 1;
+        animation: logoIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards, logoFloat 6s ease-in-out infinite;
+        animation-delay: 0.2s, 0.6s;
+        opacity: 0;
+      }
+
+      @keyframes logoIn {
+        from { opacity: 0; transform: scale(0.95) translateY(10px); }
+        to { opacity: 1; transform: scale(1) translateY(0); }
+      }
+
+      .menu-tagline {
+        margin-top: 16px;
+        color: rgba(255,255,255,0.9);
+        font-size: 18px;
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+        animation: fadeInUp 0.6s ease forwards;
+        animation-delay: 0.5s;
+        opacity: 0;
+      }
+
+      @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(15px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      @keyframes logoFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+
+      /* =========================
+         COLLEGE GRID
+         ========================= */
+      .college-grid {
+        max-width: 1600px;
+        margin: 0 auto;
+        padding: 50px 24px 60px;
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+
+      .college-card {
+        position: relative;
+        height: 300px;
+        border: none;
+        border-radius: 16px;
+        cursor: pointer;
+        overflow: hidden;
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 20px rgba(0,0,0,0.08);
+        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), 
+                    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+
+        transform: translateY(20px);
+        opacity: 0;
+        animation: fadeIn 0.5s ease forwards;
+      }
+
+      .college-card:nth-child(1) { animation-delay: 0.1s; }
+      .college-card:nth-child(2) { animation-delay: 0.15s; }
+      .college-card:nth-child(3) { animation-delay: 0.2s; }
+      .college-card:nth-child(4) { animation-delay: 0.25s; }
+      .college-card:nth-child(5) { animation-delay: 0.3s; }
+      .college-card:nth-child(6) { animation-delay: 0.35s; }
+      .college-card:nth-child(7) { animation-delay: 0.4s; }
+      .college-card:nth-child(8) { animation-delay: 0.45s; }
+      .college-card:nth-child(9) { animation-delay: 0.5s; }
+      .college-card:nth-child(10) { animation-delay: 0.55s; }
+
+      @keyframes fadeIn {
+        to { opacity: 1; }
+      }
+
+      .college-card:hover {
+        transform: translateY(10px) scale(1.01);
+        box-shadow: 0 12px 24px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.1);
+      }
+
+      .college-card:active {
+        transform: translateY(6px) scale(0.98);
+      }
+
+      .college-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          to top,
+          rgba(0,0,0,0.65) 0%,
+          rgba(0,0,0,0.3) 40%,
+          rgba(0,0,0,0.1) 100%
+        );
+        transition: opacity 0.3s ease;
+      }
+
+      .college-card:hover::before {
+        background: linear-gradient(
+          to top,
+          rgba(0,0,0,0.75) 0%,
+          rgba(0,0,0,0.4) 50%,
+          rgba(0,0,0,0.15) 100%
+        );
+      }
+
+      .college-card span {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        padding: 20px;
+        color: #fff;
+        font-size: 16px;
+        font-weight: 700;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        line-height: 1.4;
+        font-size: 25px;
+        text-align: center;
+        z-index: 2;
+      }
+
+      /* Campus background images */
+      .card-prmsuIba { background-image: url("prmsu.png"); }
+      .card-macsatIba { background-image: url("scfront2.png"); }
+      .card-prmsuBotolan { background-image: url("botolans.png"); }
+      .card-ccGapo { background-image: url("colom.png"); }
+      .card-prmsuMan { background-image: url("prmsumas.png"); }
+      .card-prmsuCruz { background-image: url("prmsucruz.png"); }
+      .card-prmsuCaste { background-image: url("prmsucaste.png"); }
+      .card-ccCruz { background-image: url("colom2.png"); }
+      .card-gcGapo { background-image: url("gcgapo.png"); }
+      .card-lyceumBotolan { background-image: url("lie.png"); }
+
+      /* =========================
+         FOOTER
+         ========================= */
+      .menu-footer {
+        text-align: center;
+        padding: 30px 20px;
+        color: #888;
+        font-size: 14px;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      /* =========================
+         RESPONSIVE
+         ========================= */
+      @media (max-width: 900px) {
+        .college-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 20px;
+          padding: 40px 20px 50px;
+        }
+
+        .college-card {
+          height: 140px;
+        }
+
+        .college-card span {
+          font-size: 14px;
+          padding: 16px;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .menu-header {
+          padding: 40px 20px 24px;
+        }
+
+        .menu-logo {
+          width: 140px;
+        }
+
+        .menu-tagline {
+          font-size: 15px;
+        }
+
+        .college-grid {
+          grid-template-columns: 1fr;
+          gap: 16px;
+          padding: 30px 16px 40px;
+        }
+
+        .college-card {
+          height: 120px;
+          border-radius: 12px;
+        }
+
+        .college-card span {
+          font-size: 14px;
+          padding: 14px;
+        }
+      }
+    </style>
+  <base target="_blank">
+</head>
+  <body>
+    <!-- Header with Logo -->
+    <header class="menu-header">
+      <img src="unicols.png" class="menu-logo" alt="UNI-COL News">
+      <p class="menu-tagline">Select your campus to view news</p>
+    </header>
+
+    <!-- College Grid -->
+    <div class="college-grid">
+      <button class="college-card card-prmsuIba" onclick="window.location.href='NEWS.html?college=prmsuIba'">
+        <span>President Ramon Magsaysay State University - Iba Campus</span>
+      </button>
+
+      <button class="college-card card-macsatIba" onclick="window.location.href='NEWS.html?college=macsatIba'">
+        <span>Mirco Asia College of Science And Technology - Iba Campus</span>
+      </button>
+
+      <button class="college-card card-prmsuBotolan" onclick="window.location.href='NEWS.html?college=prmsuBotolan'">
+        <span>President Ramon Magsaysay State University - Botolan Campus</span>
+      </button>
+
+      <button class="college-card card-ccGapo" onclick="window.location.href='NEWS.html?college=ccGapo'">
+        <span>Columban College - Olongapo Campus</span>
+      </button>
+
+      <button class="college-card card-prmsuMan" onclick="window.location.href='NEWS.html?college=prmsuMan'">
+        <span>President Ramon Magsaysay State University - Masinloc Campus</span>
+      </button>
+
+      <button class="college-card card-prmsuCruz" onclick="window.location.href='NEWS.html?college=prmsuCruz'">
+        <span>President Ramon Magsaysay State University - Sta. Cruz Campus</span>
+      </button>
+
+      <button class="college-card card-prmsuCaste" onclick="window.location.href='NEWS.html?college=prmsuCaste'">
+        <span>President Ramon Magsaysay State University - Castillejos Campus</span>
+      </button>
+
+      <button class="college-card card-ccCruz" onclick="window.location.href='NEWS.html?college=ccCruz'">
+        <span>Columban College - Sta. Cruz Campus</span>
+      </button>
+
+      <button class="college-card card-gcGapo" onclick="window.location.href='NEWS.html?college=gcGapo'">
+        <span>Gordon College - Olongapo Campus</span>
+      </button>
+
+      <button class="college-card card-lyceumBotolan" onclick="window.location.href='NEWS.html?college=lyceumBotolan'">
+        <span>Lyceum Of Western Luzon - Botolan Campus</span>
+      </button>
+    </div>
+
+    <!--<footer class="menu-footer">-->
+    <!--  Cabasug Softwares &copy; 2026-->
+    <!--</footer>-->
+
+    <script src="functions.js"></script>
+  </body>
+</html>
