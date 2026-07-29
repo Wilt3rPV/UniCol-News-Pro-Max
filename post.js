@@ -201,6 +201,12 @@ function renderPost(post) {
     <button class="modal-action-btn" onclick="editPost(${post.id})">Edit Post</button>
     <button class="modal-action-btn delete-btn" onclick="deletePost(${post.id})">Delete Post</button>
   ` : '';
+
+  const postTags = String(post.tag || '').split(',').filter(Boolean);
+  const tagBadges = postTags
+    .filter(t => tagConfig[t])
+    .map(t => `<span class="post-tag-badge" style="background:${tagConfig[t].color}">${tagConfig[t].label}</span>`)
+    .join('');
   
   // Banner with click to view full size
   const bannerHtml = post.banner ? 
@@ -230,6 +236,7 @@ function renderPost(post) {
     ${bannerHtml}
     <h2>${post.title}</h2>
     <small class="post-date">${dateDisplay}</small>
+    ${tagBadge}
     <div class="post-content">${processedContent}</div>
     ${adminButtons}
   `;

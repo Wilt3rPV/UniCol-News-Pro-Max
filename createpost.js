@@ -100,6 +100,20 @@ if (collegeSelect) {
   });
 }
 
+function setupTagChips() {
+  const container = document.getElementById('tagChips');
+  if (!container) return;
+
+  container.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('tag-chip')) return;
+    e.target.classList.toggle('selected');
+
+    const selected = Array.from(container.querySelectorAll('.tag-chip.selected'))
+      .map(btn => btn.dataset.tag);
+    document.getElementById('tagInput').value = selected.join(',');
+  });
+}
+
 document.addEventListener("DOMContentLoaded", async () => {
   const collegeFromUrl = params.get("college");
   const bannerInput = document.getElementById("banner");
@@ -122,6 +136,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   }
+
+  setupTagChips();
 
   if (editId) {
     await loadEditPost(editId, preview);
@@ -154,6 +170,10 @@ async function loadEditPost(id, preview) {
         preview.style.display = "block";
       }
 
+      if (editPost.tag) {
+        document.getElementById("tagInput").value = editPost.tag;
+      }
+
       // FIX: use document.getElementById directly
       const collegeSel = document.getElementById("collegeSelect");
       if (collegeSel && editPost.college) {
@@ -177,6 +197,21 @@ async function loadEditPost(id, preview) {
           }
         }
       }
+
+      // After setting course value, add:
+      if (editPost.tag) {
+        const tags = String(editPost.tag).split(',').filter(Boolean);
+        const chipContainer = document.getElementById('tagChips');
+        if (chipContainer) {
+          chipContainer.querySelectorAll('.tag-chip').forEach(btn => {
+            if (tags.includes(btn.dataset.tag)) {
+              btn.classList.add('selected');
+            }
+          });
+          document.getElementById('tagInput').value = editPost.tag;
+        }
+      }
+
     }
   } catch (err) {
     console.error("Exception loading edit post:", err);
@@ -378,6 +413,7 @@ async function publishPost() {
   const title = document.getElementById('title')?.value?.trim();
   const content = document.getElementById('editor')?.innerHTML;
   const bannerInput = document.getElementById('banner');
+  const selectedTags = document.getElementById("tagInput")?.value || "";
 
   console.log('[publishPost] Starting...', { selectedCollege, selectedCourse, title: !!title, contentLength: content?.length });
 
@@ -393,6 +429,7 @@ async function publishPost() {
       const updates = {
         college: selectedCollege,
         course: selectedCourse || '',
+        tag: selectedTags,
         title: title,
         content: content,
         date: new Date().toISOString().split('T')[0]
@@ -412,6 +449,7 @@ async function publishPost() {
       const post = {
         college: selectedCollege,
         course: selectedCourse || '',
+        tag: selectedTags,
         title: title,
         content: content,
         banner: null,

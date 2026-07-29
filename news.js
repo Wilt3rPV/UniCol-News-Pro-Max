@@ -11,6 +11,8 @@ const paginationContainer = document.getElementById("pagination");
 let allPosts = [];
 let filteredPosts = [];
 
+let activeTagFilters = [];   
+
 const calendarRowsEl = document.getElementById("calendarRows");
 const addBtn = document.getElementById("addCalendarRowBtn");
 
@@ -206,6 +208,7 @@ showPageLoading();
 
 document.addEventListener("DOMContentLoaded", async () => {
   populateCourseFilter();
+  renderTagFilters();
   await checkAuth();
   await loadNewsPosts();
   await renderCalendar();
@@ -602,6 +605,14 @@ function applyAllFilters() {
     });
   }
 
+  if (activeTagFilters.length > 0) {
+    finalPosts = finalPosts.filter(post => {
+      const postTags = String(post.tag || '').split(',').filter(Boolean);
+      // OR logic: post must have AT LEAST ONE of the selected tags
+      return postTags.some(t => activeTagFilters.includes(t));
+    });
+  }
+
   filteredPosts = finalPosts;
 
   const totalPages = Math.ceil(finalPosts.length / POSTS_PER_PAGE);
@@ -699,9 +710,19 @@ function renderPosts(postsToRender) {
     card.className = "news-card";
     card.style.animationDelay = `${(index + 1) * 0.05}s`;
 
+    const postTags = String(post.tag || '').split(',').filter(Boolean);
+    const tagBadges = postTags.length > 0
+      ? `<div class="news-card-tags">${postTags
+          .filter(t => tagConfig[t])
+          .map(t => `<span class="news-card-tag" style="background:${tagConfig[t].color}">${tagConfig[t].label}</span>`)
+          .join('')}</div>`
+    : '';
+
     if (post.banner) {
       card.innerHTML = `
-        <div class="news-card-image" style="background-image:url('${post.banner}')"></div>
+        <div class="news-card-image" style="background-image:url('${post.banner}')">
+          ${tagBadges}
+        </div>
         <div class="news-card-body">
           <div class="news-card-title">${escapeHtml(post.title)}</div>
         </div>
@@ -709,6 +730,7 @@ function renderPosts(postsToRender) {
     } else {
       card.innerHTML = `
         <div class="news-card-image" style="background:#667eea;display:flex;align-items:center;justify-content:center;">
+          ${tagBadges}
           <span style="color:rgba(255,255,255,0.5);font-size:40px;">&#128240;</span>
         </div>
         <div class="news-card-body">
@@ -908,3 +930,46 @@ document.getElementById('imageOverlay')?.addEventListener('click', function(e) {
 });
 
 initAuth();
+
+function renderTagFilters() {
+  const row = document.getElementById('tagFilterRow');
+  if (!row) return;
+
+  const label = row.querySelector('span');
+  row.innerHTML = '';
+  if (label) row.appendChild(label);
+
+  // "All" chip — clears everything when active
+  const allChip = document.createElement('button');
+  allChip.className = 'tag-chip' + (activeTagFilters.length === 0 ? ' active' : '');
+  allChip.textContent = 'All';
+  allChip.onclick = () => {
+    activeTagFilters = [];
+    currentPage = 1;
+    renderTagFilters();
+    applyAllFilters();
+  };
+  row.appendChild(allChip);
+
+  // Individual tag chips — toggle on click
+  Object.entries(tagConfig).forEach(([key, cfg]) => {
+    const isActive = activeTagFilters.includes(key);
+    const chip = document.createElement('button');
+    chip.className = 'tag-chip' + (isActive ? ' active' : '');
+    chip.textContent = cfg.label;
+    chip.style.borderColor = cfg.color;
+    chip.style.color = isActive ? '#fff' : cfg.color;
+    if (isActive) chip.style.background = cfg.color;
+    chip.onclick = () => {
+      if (isActive) {
+        activeTagFilters = activeTagFilters.filter(t => t !== key);
+      } else {
+        activeTagFilters.push(key);
+      }
+      currentPage = 1;
+      renderTagFilters();
+      applyAllFilters();
+    };
+    row.appendChild(chip);
+  });
+}

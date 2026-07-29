@@ -5,6 +5,16 @@
 // PASTE YOUR REDEPLOYED APPS SCRIPT WEB APP URL HERE
 const API_URL = 'https://script.google.com/macros/s/AKfycby1WM-iBzqsLnKiXSqQkUuhxn_TrsxYkh9UAGMhAxkAmkicl4XSMyAXMTBK6m-39rKV/exec';
 
+//CONFIG OF THE FUCKING TAGS
+const tagConfig = {
+  event:        { label: 'Event',        color: '#e74c3c' },
+  announcement: { label: 'Announcement', color: '#3498db' },
+  news:         { label: 'News',         color: '#2ecc71' },
+  academic:     { label: 'Academic',     color: '#9b59b6' },
+  sports:       { label: 'Sports',       color: '#f39c12' },
+  misc:         { label: 'Misc',         color: '#7f8c8d' }
+};
+
 // =========================
 // AUTH (Google Sheets backed)
 // =========================

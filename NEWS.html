@@ -422,6 +422,66 @@
         background: rgba(102, 126, 234, 0.05);
       }
 
+      /* Tag filter chips below search bar */
+      .tag-filter-row {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-top: 12px;
+        align-items: center;
+      }
+
+      .tag-chip {
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid #ddd;
+        background: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        color: #555;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
+      }
+
+      .tag-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+
+      .tag-chip.active {
+        color: #fff !important;
+        border-color: transparent !important;
+      }
+
+      /* Tag container — sits on top of the card image */
+      .news-card-tags {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        right: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        z-index: 3;
+        pointer-events: none; /* let clicks pass through to the card */
+      }
+
+      /* Individual tag pill */
+      .news-card-tag {
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #fff;
+        backdrop-filter: blur(4px);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+        white-space: nowrap;
+        pointer-events: auto;
+      }
+
       /* ========================================
          MODALS (modernized from U3)
          ======================================== */
@@ -822,7 +882,11 @@
           <div class="search-input-wrapper">
             <span class="search-icon">&#128269;</span>
             <input type="text" id="searchInput" placeholder="Search..." />
-          </div>
+          </div>  
+        </div>
+
+        <div class="tag-filter-row" id="tagFilterRow">
+          <span style="font-size:13px;font-weight:600;color:#777;">Tags:</span>
         </div>
 
         <div id="news-container"></div>

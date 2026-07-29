@@ -124,6 +124,33 @@
         background: #c5c3c6;
       }
 
+      .tag-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 10px;
+      }
+      .tag-chip {
+        padding: 8px 16px;
+        border-radius: 999px;
+        border: 1px solid #ccc;
+        background: #fff;
+        font-size: 14px;
+        font-weight: 600;
+        color: #555;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .tag-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      }
+      .tag-chip.selected {
+        color: #fff;
+        border-color: transparent;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      }
+
       /* Toast Notification Styles - Glass */
       /* .toast-container {
         position: fixed;
@@ -271,6 +298,17 @@
           <select id="courseSelect">
             <option value="">NONE</option>
           </select>
+
+          <label>Tags</label>
+          <div class="tag-chips" id="tagChips">
+            <button type="button" data-tag="event" class="tag-chip">Event</button>
+            <button type="button" data-tag="announcement" class="tag-chip">Announcement</button>
+            <button type="button" data-tag="news" class="tag-chip">News</button>
+            <button type="button" data-tag="academic" class="tag-chip">Academic</button>
+            <button type="button" data-tag="sports" class="tag-chip">Sports</button>
+            <button type="button" data-tag="misc" class="tag-chip">Misc</button>
+          </div>
+          <input type="hidden" id="tagInput" value="">
 
           <button onclick="publishPost()">Publish</button>
 
