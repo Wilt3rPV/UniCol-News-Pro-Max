@@ -832,7 +832,7 @@ async function handleLogout() {
 }
 
 function goToLogin() {
-  window.location.href = 'accountcreation.html';
+  window.location.href = 'login.html';
 }
 
 function continuetoMenu() {
