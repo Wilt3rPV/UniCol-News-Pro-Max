@@ -3,9 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Admin Login - UniCol News</title>
+  <title>Admin Portal - UniCol News</title>
   <script src="database.js"></script>
-  <link rel="stylesheet" href="style.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -16,16 +15,17 @@
     }
 
     /* ===== HEADER (matches NEWS.html / index.html) ===== */
-    .login-header {
+    .portal-header {
       display: flex;
       align-items: center;
       gap: 16px;
       padding: 16px 32px;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       border-bottom: 1px solid rgba(255,255,255,0.2);
+      position: relative;
     }
 
-    .login-header img {
+    .portal-header img {
       height: 48px;
       width: auto;
       cursor: pointer;
@@ -33,17 +33,38 @@
       transition: transform 0.2s ease;
     }
 
-    .login-header img:hover { transform: scale(1.05); }
+    .portal-header img:hover { transform: scale(1.05); }
 
-    .login-header h1 {
-      font-size: 24px;
+    .portal-header h1 {
+      font-size: 22px;
       font-weight: 700;
       color: #fff;
       text-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
 
+    /* Admin badge */
+    .admin-badge {
+      position: absolute;
+      top: 50%;
+      right: 32px;
+      transform: translateY(-50%);
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(81, 207, 102, 0.85);
+      backdrop-filter: blur(10px) saturate(150%);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: #fff;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+      display: none;
+    }
+
+    .admin-badge.visible { display: block; }
+
     /* ===== MAIN ===== */
-    .login-main {
+    .portal-main {
       display: grid;
       place-items: center;
       min-height: calc(100vh - 81px);
@@ -51,19 +72,20 @@
     }
 
     /* ===== GLASS CARD ===== */
-    .login-card {
-      width: min(440px, 100%);
-      background: rgba(255,255,255,0.92);
+    .portal-card {
+      width: min(480px, 100%);
+      background: rgba(255,255,255,0.95);
       backdrop-filter: blur(20px) saturate(180%);
       border-radius: 24px;
       border: 1px solid rgba(255,255,255,0.6);
       box-shadow: 0 25px 50px rgba(0,0,0,0.12), inset 0 1px 0 rgba(255,255,255,0.8);
-      padding: 48px 40px;
+      padding: 44px 40px;
       position: relative;
       overflow: hidden;
+      animation: cardIn 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
     }
 
-    .login-card::before {
+    .portal-card::before {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0;
@@ -73,24 +95,61 @@
       z-index: 0;
     }
 
-    .login-card > * { position: relative; z-index: 1; }
+    .portal-card > * { position: relative; z-index: 1; }
 
-    .login-card h2 {
-      font-size: 28px;
+    @keyframes cardIn {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* Card exit */
+    .card-exit {
+      animation: cardOut 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards !important;
+    }
+
+    @keyframes cardOut {
+      from { opacity: 1; transform: scale(1); }
+      to   { opacity: 0; transform: scale(0.96); }
+    }
+
+    .portal-card h2 {
+      font-size: 26px;
       font-weight: 800;
       color: #1a1a1a;
       margin-bottom: 6px;
       text-align: center;
     }
 
-    .login-card .subtitle {
+    .portal-card .subtitle {
       color: #888;
       font-size: 15px;
       text-align: center;
-      margin-bottom: 36px;
+      margin-bottom: 32px;
     }
 
-    .form-group { margin-bottom: 20px; }
+    /* Back button inside card */
+    .back-btn {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      background: rgba(0,0,0,0.05);
+      border: 1px solid rgba(0,0,0,0.08);
+      color: #555;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      z-index: 2;
+    }
+
+    .back-btn:hover {
+      background: rgba(0,0,0,0.08);
+      transform: translateY(-1px);
+    }
+
+    .form-group { margin-bottom: 18px; }
 
     .form-label {
       display: block;
@@ -120,7 +179,7 @@
 
     .form-input::placeholder { color: #bbb; }
 
-    .login-btn {
+    .form-button {
       width: 100%;
       padding: 16px;
       border-radius: 12px;
@@ -135,43 +194,42 @@
       margin-top: 8px;
     }
 
-    .login-btn:hover {
+    .form-button:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
       filter: brightness(1.05);
     }
 
-    .login-btn:active {
+    .form-button:active {
       transform: translateY(0);
       filter: brightness(0.98);
     }
 
-    .login-btn:disabled {
+    .form-button.secondary {
+      background: #f0f0f0;
+      color: #555;
+      box-shadow: none;
+      border: 1px solid #ddd;
+    }
+
+    .form-button.secondary:hover {
+      background: #e8e8e8;
+      filter: brightness(0.98);
+    }
+
+    .form-button.logout-btn {
+      background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+      box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+    }
+
+    .form-button.logout-btn:hover {
+      box-shadow: 0 8px 25px rgba(255, 107, 107, 0.4);
+    }
+
+    .form-button:disabled {
       opacity: 0.6;
       cursor: not-allowed;
       transform: none;
-    }
-
-    .form-footer {
-      margin-top: 28px;
-      text-align: center;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .form-footer a {
-      color: #667eea;
-      font-size: 14px;
-      text-decoration: none;
-      font-weight: 600;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-
-    .form-footer a:hover {
-      color: #764ba2;
-      text-decoration: underline;
     }
 
     .form-error {
@@ -187,8 +245,164 @@
 
     .form-error.visible { display: block; }
 
-    /* ===== TOAST ===== */
-    /* .toast-container {
+    .form-success {
+      color: #51cf66;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(81, 207, 102, 0.1);
+      border-radius: 8px;
+      display: none;
+    }
+
+    .form-success.visible { display: block; }
+
+    .form-toggle {
+      text-align: center;
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .form-toggle a {
+      color: #667eea;
+      font-size: 14px;
+      text-decoration: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .form-toggle a:hover {
+      color: #764ba2;
+      text-decoration: underline;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 24px 0;
+      color: #bbb;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    /* Code display */
+    .code-display {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 16px;
+      padding: 28px;
+      margin: 20px 0;
+      text-align: center;
+      box-shadow: 0 10px 30px rgba(102, 126, 234, 0.25);
+    }
+
+    .code-display-label {
+      color: rgba(255,255,255,0.8);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .code-display-value {
+      color: #fff;
+      font-size: 36px;
+      font-weight: 800;
+      letter-spacing: 10px;
+      font-family: monospace;
+      text-shadow: 0 0 20px rgba(255,255,255,0.3);
+    }
+
+    .copy-btn {
+      background: rgba(255,255,255,0.2);
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #fff;
+      padding: 10px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-top: 16px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover { background: rgba(255,255,255,0.3); }
+    .copy-btn.copied { background: rgba(81, 207, 102, 0.6); }
+
+    /* Code inputs */
+    .code-inputs {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin: 24px 0;
+    }
+
+    .code-input {
+      width: 50px;
+      height: 60px;
+      text-align: center;
+      font-size: 26px;
+      font-weight: 800;
+      border-radius: 12px;
+      border: 2px solid #e0e0e0;
+      background: #f8f8f8;
+      color: #333;
+      transition: all 0.2s ease;
+    }
+
+    .code-input:focus {
+      background: #fff;
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+      outline: none;
+    }
+
+    /* Admin panel list */
+    .admin-list {
+      max-height: 280px;
+      overflow-y: auto;
+      margin: 16px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .admin-list-item {
+      background: #f8f8f8;
+      border-radius: 10px;
+      padding: 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid #eee;
+    }
+
+    .admin-list-item code {
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: 700;
+      color: #333;
+    }
+
+    .admin-list-item span {
+      font-size: 12px;
+      color: #888;
+    }
+
+    /* Toast */
+    .toast-container {
       position: fixed;
       top: 20px;
       left: 50%;
@@ -237,63 +451,301 @@
     .toast.success::before { content: ":)"; font-size: 20px; font-weight: bold; }
     .toast.error::before   { content: ":("; font-size: 18px; font-weight: bold; }
 
-    @keyframes spin { to { transform: rotate(360deg); } } */
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 480px) {
-      .login-header { padding: 12px 20px; }
-      .login-header h1 { font-size: 20px; }
-      .login-card { padding: 32px 24px; border-radius: 20px; }
+    .hidden { display: none !important; }
+
+    /* Responsive */
+    @media (max-width: 520px) {
+      .portal-header { padding: 12px 20px; }
+      .portal-header h1 { font-size: 18px; }
+      .portal-card { padding: 32px 24px; border-radius: 20px; }
+      .code-input { width: 42px; height: 52px; font-size: 22px; }
+      .code-display-value { font-size: 28px; letter-spacing: 6px; }
     }
   </style>
 </head>
 <body>
+
+  <!-- Toast -->
   <div id="toastContainer" class="toast-container">
     <div id="toast" class="toast">
       <div class="toast-spinner"></div>
-      <span class="toast-text" id="toastText">Loading...</span>
+      <span id="toastText">Loading...</span>
     </div>
   </div>
 
-  <header class="login-header">
+  <!-- Header -->
+  <header class="portal-header">
     <img src="unicols.png" alt="UNI-COL News" onclick="window.location.href='index.html'">
-    <h1>Admin Login</h1>
+    <h1 id="pageTitle">Admin Portal</h1>
+    <div class="admin-badge" id="adminBadge">ADMIN</div>
   </header>
 
-  <main class="login-main">
-    <div class="login-card">
-      <h2>Welcome Back</h2>
-      <p class="subtitle">Sign in to manage campus content</p>
+  <!-- Main -->
+  <main class="portal-main">
+    <div class="portal-card" id="portalCard">
 
-      <form onsubmit="handleLogin(event)">
-        <div class="form-group">
-          <label class="form-label">Email</label>
-          <input type="email" class="form-input" id="loginEmail" placeholder="admin@example.com" required>
+      <button class="back-btn hidden" id="backBtn" onclick="handleBack()">← Back</button>
+
+      <!-- ========== LOGIN ========== -->
+      <div id="loginView">
+        <h2>Welcome Back</h2>
+        <p class="subtitle">Sign in to manage campus content</p>
+
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="loginEmail" placeholder="admin@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="form-button" id="loginBtn">Sign In</button>
+          <div class="form-error" id="loginError"></div>
+        </form>
+
+        <div class="form-toggle">
+          <a onclick="showForgotView()">Forgot password?</a>
+          <a onclick="showRegisterView()">Create admin account</a>
+          <div class="divider">or</div>
+          <a onclick="goBack()">← Back to campus</a>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" class="form-input" id="loginPassword" placeholder="••••••••" required>
-        </div>
-
-        <button type="submit" class="login-btn" id="loginBtn">Sign In</button>
-
-        <div class="form-error" id="loginError"></div>
-      </form>
-
-      <div class="form-footer">
-        <a onclick="window.location.href='accountcreation.html?view=forgot'">Forgot password?</a>
-        <a onclick="window.location.href='accountcreation.html?view=register'">Need an admin account?</a>
-        <a onclick="goBack()">← Back to campus</a>
       </div>
+
+      <!-- ========== REGISTER ========== -->
+      <div id="registerView" class="hidden">
+        <h2>New Admin</h2>
+        <p class="subtitle">Create an admin account</p>
+
+        <form onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="registerEmail" placeholder="newadmin@example.com" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-input" id="registerPassword" placeholder="••••••••" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-input" id="registerConfirm" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="form-button">Create Account</button>
+          <div class="form-error hidden" id="registerError"></div>
+          <div class="form-success hidden" id="registerSuccess">
+            Admin created successfully!
+          </div>
+        </form>
+      </div>
+
+      <!-- ========== LOGGED IN / ADMIN PANEL ========== -->
+      <div id="loggedInView" class="hidden">
+        <h2>Admin Access</h2>
+        <p class="subtitle">Logged in as <span id="loggedInEmail"></span></p>
+        <p class="subtitle" style="margin-bottom: 24px;"><b>Make sure to remember your email!</b></p>
+
+        <button class="form-button logout-btn" onclick="handleLogout()">Logout</button>
+
+        <div class="divider">Admin Tools</div>
+
+        <button class="form-button secondary" onclick="showRegisterView()">Register New Admin</button>
+        <button class="form-button secondary" onclick="showAdminCodePanel()" style="margin-top: 10px;">View Active Reset Codes</button>
+      </div>
+
+      <!-- ========== FORGOT PASSWORD ========== -->
+      <div id="forgotView" class="hidden">
+        <h2>Reset Password</h2>
+        <p class="subtitle">Enter your email to receive a reset code</p>
+
+        <form onsubmit="handleRequestResetCode(event)">
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-input" id="forgotEmail" placeholder="admin@example.com" required>
+          </div>
+          <button type="submit" class="form-button">Send Reset Code</button>
+          <div class="form-error hidden" id="forgotError"></div>
+        </form>
+      </div>
+
+      <!-- ========== SHOW CODE ========== -->
+      <div id="showCodeView" class="hidden">
+        <h2>Reset Code Generated</h2>
+        <p class="subtitle">Use this code to reset your password</p>
+
+        <div class="code-display">
+          <div class="code-display-label">Your Reset Code</div>
+          <div class="code-display-value" id="generatedCode">------</div>
+          <button class="copy-btn" onclick="copyCode()">Copy Code</button>
+        </div>
+
+        <p style="color: #ff6b6b; font-size: 13px; text-align: center; margin: 12px 0;">⚠️ This code expires in 15 minutes</p>
+
+        <button class="form-button" onclick="proceedToVerify()">Enter Code</button>
+
+        <div class="form-toggle">
+          <a onclick="showAdminCodePanel()">View all active codes (admin only)</a>
+        </div>
+      </div>
+
+      <!-- ========== VERIFY CODE ========== -->
+      <div id="verifyCodeView" class="hidden">
+        <h2>Enter Code</h2>
+        <p class="subtitle">Enter the 6-digit reset code</p>
+
+        <div class="code-inputs">
+          <input type="text" class="code-input" maxlength="1" data-index="0">
+          <input type="text" class="code-input" maxlength="1" data-index="1">
+          <input type="text" class="code-input" maxlength="1" data-index="2">
+          <input type="text" class="code-input" maxlength="1" data-index="3">
+          <input type="text" class="code-input" maxlength="1" data-index="4">
+          <input type="text" class="code-input" maxlength="1" data-index="5">
+        </div>
+
+        <button class="form-button" onclick="verifyCode()">Verify Code</button>
+        <div class="form-error hidden" id="codeError"></div>
+
+        <div class="form-toggle">
+          <a onclick="showForgotView()">Request new code</a>
+        </div>
+      </div>
+
+      <!-- ========== NEW PASSWORD ========== -->
+      <div id="newPasswordView" class="hidden">
+        <h2>New Password</h2>
+        <p class="subtitle">Enter your new password</p>
+
+        <form onsubmit="handlePasswordReset(event)">
+          <div class="form-group">
+            <label class="form-label">New Password</label>
+            <input type="password" class="form-input" id="newPassword" placeholder="••••••••" required minlength="6">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password</label>
+            <input type="password" class="form-input" id="confirmNewPassword" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="form-button">Reset Password</button>
+          <div class="form-error hidden" id="resetError"></div>
+        </form>
+      </div>
+
+      <!-- ========== ADMIN CODE PANEL ========== -->
+      <div id="adminCodePanel" class="hidden">
+        <h2>Active Reset Codes</h2>
+        <p class="subtitle">All unused reset codes</p>
+
+        <div id="activeCodesList" class="admin-list"></div>
+
+        <button class="form-button secondary" onclick="backFromAdminPanel()">Back</button>
+      </div>
+
     </div>
   </main>
 
   <script>
+    /* =========================
+       TOAST
+       ========================= */
+    function showToast(message, type = 'loading') {
+      const container = document.getElementById('toastContainer');
+      const toast = document.getElementById('toast');
+      const text = document.getElementById('toastText');
+      text.textContent = message;
+      toast.className = 'toast';
+      container.classList.remove('visible');
+      if (type === 'success') toast.classList.add('success');
+      if (type === 'error')   toast.classList.add('error');
+      requestAnimationFrame(() => container.classList.add('visible'));
+    }
 
+    function hideToast() {
+      document.getElementById('toastContainer')?.classList.remove('visible');
+    }
+
+    function showError(message) {
+      showToast(message, 'error');
+      setTimeout(hideToast, 3000);
+    }
+
+    /* =========================
+       VIEW MANAGEMENT
+       ========================= */
+    function hideAllViews() {
+      ['loginView','registerView','loggedInView','forgotView',
+       'showCodeView','verifyCodeView','newPasswordView','adminCodePanel']
+        .forEach(id => document.getElementById(id).classList.add('hidden'));
+    }
+
+    function showLoginView() {
+      hideAllViews();
+      document.getElementById('loginView').classList.remove('hidden');
+      updateBackButton();
+      clearErrors();
+    }
+
+    function showRegisterView() {
+      hideAllViews();
+      document.getElementById('registerView').classList.remove('hidden');
+      updateBackButton();
+      clearErrors();
+    }
+
+    function showLoggedInView() {
+      hideAllViews();
+      document.getElementById('loggedInView').classList.remove('hidden');
+      document.getElementById('loggedInEmail').textContent = currentUser?.email || '';
+      updateBackButton();
+      clearErrors();
+    }
+
+    function showForgotView() {
+      hideAllViews();
+      document.getElementById('forgotView').classList.remove('hidden');
+      updateBackButton();
+      clearErrors();
+    }
+
+    function showCodeView(code) {
+      hideAllViews();
+      document.getElementById('showCodeView').classList.remove('hidden');
+      document.getElementById('generatedCode').textContent = code;
+      updateBackButton();
+      clearErrors();
+    }
+
+    function showVerifyCodeView() {
+      hideAllViews();
+      document.getElementById('verifyCodeView').classList.remove('hidden');
+      updateBackButton();
+      clearErrors();
+      setTimeout(() => document.querySelector('.code-input[data-index="0"]')?.focus(), 100);
+    }
+
+    function showNewPasswordView() {
+      hideAllViews();
+      document.getElementById('newPasswordView').classList.remove('hidden');
+      updateBackButton();
+      clearErrors();
+    }
+
+    function updateBackButton() {
+      const btn = document.getElementById('backBtn');
+      const login = !document.getElementById('loginView').classList.contains('hidden');
+      btn.classList.toggle('hidden', login);
+    }
+
+    function clearErrors() {
+      document.querySelectorAll('.form-error').forEach(el => el.classList.remove('visible','hidden'));
+      document.querySelectorAll('.form-success').forEach(el => el.classList.remove('visible','hidden'));
+    }
+
+    /* =========================
+       NAVIGATION
+       ========================= */
     function getRedirectUrl() {
-      const params = new URLSearchParams(window.location.search);
-      const r = params.get('redirect');
+      const p = new URLSearchParams(window.location.search);
+      const r = p.get('redirect');
       if (r) return decodeURIComponent(r);
       const ref = document.referrer;
       if (ref && ref.includes(window.location.host) && !ref.includes('login.html')) return ref;
@@ -304,32 +756,400 @@
       window.location.href = getRedirectUrl();
     }
 
+    function handleBack() {
+      const views = {
+        register: 'registerView',
+        forgot: 'forgotView',
+        showCode: 'showCodeView',
+        verifyCode: 'verifyCodeView',
+        newPass: 'newPasswordView',
+        adminPanel: 'adminCodePanel'
+      };
+
+      if (!document.getElementById('verifyCodeView').classList.contains('hidden')) {
+        document.querySelectorAll('.code-input').forEach(i => i.value = '');
+      }
+      if (!document.getElementById('newPasswordView').classList.contains('hidden')) {
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmNewPassword').value = '';
+        document.querySelectorAll('.code-input').forEach(i => i.value = '');
+      }
+      if (!document.getElementById('forgotView').classList.contains('hidden')) {
+        document.getElementById('forgotEmail').value = '';
+      }
+
+      if (!document.getElementById('adminCodePanel').classList.contains('hidden')) {
+        if (resetState.code) showCodeView(resetState.code);
+        else showForgotView();
+        return;
+      }
+      if (!document.getElementById('newPasswordView').classList.contains('hidden')) {
+        showVerifyCodeView(); return;
+      }
+      if (!document.getElementById('verifyCodeView').classList.contains('hidden')) {
+        if (resetState.code) showCodeView(resetState.code);
+        else showForgotView();
+        return;
+      }
+      if (!document.getElementById('showCodeView').classList.contains('hidden')) {
+        document.getElementById('generatedCode').textContent = '------';
+        showForgotView(); return;
+      }
+      if (!document.getElementById('loggedInView').classList.contains('hidden')) {
+        goBack(); return;
+      }
+      if (!document.getElementById('registerView').classList.contains('hidden')) {
+        if (currentUser && isAdmin) { showLoggedInView(); return; }
+      }
+      if (!document.getElementById('forgotView').classList.contains('hidden')) {
+        showLoginView(); return;
+      }
+
+      showLoginView();
+    }
+
+    /* =========================
+       AUTH HANDLERS
+       ========================= */
     async function handleLogin(e) {
       e.preventDefault();
-      const btn = document.getElementById('loginBtn');
       const err = document.getElementById('loginError');
       err.classList.remove('visible');
-      btn.disabled = true;
-
-      showToast('Signing in...', 'loading');
 
       try {
+        showToast('Signing in...', 'loading');
         await signIn(document.getElementById('loginEmail').value,
                      document.getElementById('loginPassword').value);
         showToast('Signed in successfully!', 'success');
-        setTimeout(() => window.location.href = getRedirectUrl(), 1000);
+        setTimeout(hideToast, 1500);
       } catch (error) {
         hideToast();
         err.textContent = error.message || 'Invalid credentials';
         err.classList.add('visible');
-        btn.disabled = false;
       }
     }
 
+    async function handleRegister(e) {
+      e.preventDefault();
+      const err = document.getElementById('registerError');
+      const succ = document.getElementById('registerSuccess');
+      err.classList.remove('visible');
+      succ.classList.remove('visible');
+
+      const email = document.getElementById('registerEmail').value;
+      const pw = document.getElementById('registerPassword').value;
+      const confirm = document.getElementById('registerConfirm').value;
+
+      if (pw !== confirm) {
+        err.textContent = 'Passwords do not match';
+        err.classList.add('visible');
+        return;
+      }
+
+      try {
+        showToast('Creating admin account...', 'loading');
+        await signUp(email, pw);
+        hideToast();
+        showToast('Admin created!', 'success');
+        succ.classList.add('visible');
+        document.getElementById('registerView').querySelector('form').reset();
+        setTimeout(hideToast, 2000);
+      } catch (error) {
+        hideToast();
+        err.textContent = error.message;
+        err.classList.add('visible');
+      }
+    }
+
+    async function handleLogout() {
+      showToast('Logging out...', 'loading');
+      try {
+        await signOut();
+        showToast('Logged out', 'success');
+        setTimeout(() => {
+          hideToast();
+          showLoginView();
+          updateUI();
+        }, 1000);
+      } catch (err) {
+        showError('Error logging out');
+      }
+    }
+
+    /* =========================
+       RESET CODE FLOW
+       ========================= */
+    let resetState = { email: null, code: null, codeId: null };
+
+    function generateCode() {
+      return Math.floor(100000 + Math.random() * 900000).toString();
+    }
+
+    async function handleRequestResetCode(e) {
+      e.preventDefault();
+      const email = document.getElementById('forgotEmail').value;
+      const err = document.getElementById('forgotError');
+      err.classList.remove('visible');
+
+      try {
+        showToast('Verifying email...', 'loading');
+
+        const { data: adminData, error: adminError } = await db
+          .from('admin_profiles').select('id, email').eq('email', email).single();
+
+        if (adminError || !adminData) {
+          hideToast();
+          err.innerHTML = 'If this email is registered, a reset code will be shown.<br>Please contact your administrator if you need assistance.';
+          err.classList.add('visible');
+          await new Promise(r => setTimeout(r, 1500));
+          return;
+        }
+
+        const code = generateCode();
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+
+        const { data, error } = await db
+          .from('reset_password_with_code')
+          .insert([{ email, code, expires_at: expiresAt, used: false }])
+          .select().single();
+
+        if (error) {
+          hideToast();
+          err.textContent = 'System error. Please try again.';
+          err.classList.add('visible');
+          return;
+        }
+
+        hideToast();
+        resetState = { email, code, codeId: data.id };
+        showCodeView(code);
+
+      } catch (err) {
+        console.error(err);
+        hideToast();
+        err.textContent = 'System error. Please try again.';
+        err.classList.add('visible');
+      }
+    }
+
+    function copyCode() {
+      const code = document.getElementById('generatedCode').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copy Code'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+
+    function proceedToVerify() {
+      showVerifyCodeView();
+    }
+
+    // Code input handling
+    document.querySelectorAll('.code-input').forEach((input, index) => {
+      input.addEventListener('input', (e) => {
+        const val = e.target.value;
+        if (!/^\d*$/.test(val)) { e.target.value = ''; return; }
+        if (val && index < 5) document.querySelector(`.code-input[data-index="${index + 1}"]`)?.focus();
+        if (index === 5 && val) setTimeout(verifyCode, 100);
+      });
+      input.addEventListener('keydown', (e) => {
+        if (e.key === 'Backspace' && !e.target.value && index > 0)
+          document.querySelector(`.code-input[data-index="${index - 1}"]`)?.focus();
+      });
+      input.addEventListener('paste', (e) => {
+        e.preventDefault();
+        const paste = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+        document.querySelectorAll('.code-input').forEach((inp, i) => { inp.value = paste[i] || ''; });
+        if (paste.length === 6) setTimeout(verifyCode, 100);
+        else if (paste.length > 0) document.querySelector(`.code-input[data-index="${Math.min(paste.length, 5)}"]`)?.focus();
+      });
+    });
+
+    async function verifyCode() {
+      const inputs = document.querySelectorAll('.code-input');
+      const entered = Array.from(inputs).map(i => i.value).join('');
+      const err = document.getElementById('codeError');
+
+      if (entered.length !== 6) {
+        err.textContent = 'Please enter all 6 digits';
+        err.classList.add('visible');
+        return;
+      }
+
+      try {
+        showToast('Verifying...', 'loading');
+
+        const { data, error } = await db
+          .from('reset_password_with_code')
+          .select('*')
+          .eq('email', resetState.email)
+          .eq('code', entered)
+          .eq('used', false)
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single();
+
+        if (error || !data) {
+          hideToast();
+          err.textContent = 'Invalid or expired code';
+          err.classList.add('visible');
+          inputs.forEach(i => i.value = '');
+          inputs[0].focus();
+          return;
+        }
+
+        resetState.code = entered;
+        resetState.codeId = data.id;
+        hideToast();
+        showToast('Code verified!', 'success');
+        setTimeout(() => { hideToast(); showNewPasswordView(); }, 800);
+
+      } catch (err) {
+        console.error(err);
+        hideToast();
+        err.textContent = 'Error verifying code';
+        err.classList.add('visible');
+        inputs.forEach(i => i.value = '');
+        inputs[0].focus();
+      }
+    }
+
+    async function handlePasswordReset(e) {
+      e.preventDefault();
+      const pw = document.getElementById('newPassword').value;
+      const confirm = document.getElementById('confirmNewPassword').value;
+      const err = document.getElementById('resetError');
+      err.classList.remove('visible');
+
+      if (pw !== confirm) {
+        err.textContent = 'Passwords do not match';
+        err.classList.add('visible');
+        return;
+      }
+      if (pw.length < 6) {
+        err.textContent = 'Password must be at least 6 characters';
+        err.classList.add('visible');
+        return;
+      }
+
+      try {
+        showToast('Resetting password...', 'loading');
+
+        const { error: rpcError } = await db.rpc('reset_password_with_code', {
+          user_email: resetState.email,
+          new_password: pw,
+          verification_code: resetState.code
+        });
+
+        if (rpcError) {
+          hideToast();
+          err.textContent = 'Reset failed: ' + rpcError.message;
+          err.classList.add('visible');
+          return;
+        }
+
+        await db.from('reset_password_with_code').delete().eq('id', resetState.codeId);
+
+        document.querySelectorAll('.code-input').forEach(i => i.value = '');
+        document.getElementById('newPassword').value = '';
+        document.getElementById('confirmNewPassword').value = '';
+
+        hideToast();
+        showToast('Password reset successful!', 'success');
+        setTimeout(() => { resetState = { email: null, code: null, codeId: null }; showLoginView(); }, 1500);
+
+      } catch (err) {
+        console.error(err);
+        hideToast();
+        err.textContent = 'Error resetting password';
+        err.classList.add('visible');
+      }
+    }
+
+    /* =========================
+       ADMIN CODE PANEL
+       ========================= */
+    async function showAdminCodePanel() {
+      if (!currentUser || !isAdmin) {
+        showError('Admin access required');
+        return;
+      }
+
+      hideAllViews();
+      document.getElementById('adminCodePanel').classList.remove('hidden');
+      updateBackButton();
+
+      const list = document.getElementById('activeCodesList');
+      list.innerHTML = '<p style="color:#888;text-align:center;padding:20px;">Loading...</p>';
+
+      try {
+        const { data, error } = await db
+          .from('reset_password_with_code')
+          .select('*')
+          .eq('used', false)
+          .gt('expires_at', new Date().toISOString())
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          list.innerHTML = `<p style="color:#ff6b6b;text-align:center;padding:20px;">Error: ${error.message}</p>`;
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          list.innerHTML = '<p style="color:#888;text-align:center;padding:20px;">No active codes</p>';
+          return;
+        }
+
+        list.innerHTML = data.map(row => `
+          <div class="admin-list-item">
+            <div>
+              <code>${row.code}</code>
+              <div style="font-size:12px;color:#888;margin-top:2px;">${row.email}</div>
+            </div>
+            <span>${new Date(row.expires_at).toLocaleTimeString()}</span>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        list.innerHTML = '<p style="color:#ff6b6b;text-align:center;padding:20px;">Error loading codes</p>';
+      }
+    }
+
+    function backFromAdminPanel() {
+      if (resetState.code) showCodeView(resetState.code);
+      else showForgotView();
+    }
+
+    /* =========================
+       UI / STATE
+       ========================= */
+    function updateUI() {
+      const badge = document.getElementById('adminBadge');
+      const title = document.getElementById('pageTitle');
+
+      if (currentUser && isAdmin) {
+        badge.classList.add('visible');
+        title.textContent = 'Admin Panel';
+      } else {
+        badge.classList.remove('visible');
+        title.textContent = 'Admin Portal';
+      }
+    }
+
+    window.addEventListener('authStateChanged', () => {
+      updateUI();
+      if (currentUser && isAdmin) showLoggedInView();
+    });
+
+    // Init
     checkAuth().then(() => {
-      if (currentUser && isAdmin) window.location.href = getRedirectUrl();
+      updateUI();
+      if (currentUser && isAdmin) showLoggedInView();
+      else showLoginView();
     });
   </script>
-  <script src="news.js"></script>
 </body>
 </html>
