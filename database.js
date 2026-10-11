@@ -3,7 +3,7 @@
 // ============================================
 
 // PASTE YOUR REDEPLOYED APPS SCRIPT WEB APP URL HERE
-const API_URL = 'https://script.google.com/macros/s/AKfycby1WM-iBzqsLnKiXSqQkUuhxn_TrsxYkh9UAGMhAxkAmkicl4XSMyAXMTBK6m-39rKV/exec';
+const API_URL = 'https://script.google.com/macros/s/AKfycbz6a-GuPMJEkOfOvmsa4mTZCJ2JoQJ-lQON-KhH2O8gx0PpLJA-s_keULSp5Cixks11/exec';
 
 //CONFIG OF THE FUCKING TAGS
 const tagConfig = {
@@ -209,6 +209,39 @@ async function runQuery({ table, filters, orderCol, orderAsc, isSingle, insertRo
     console.error('[DB Query error]', err);
     return { data: null, error: { message: err.message } };
   }
+}
+
+/// =========================
+// CAMPUS INFO (About panel) API
+// =========================
+async function fetchCampusInfo(college) {
+  const result = await apiGet({ action: 'getCampusInfo', college });
+
+  if (result.error) {
+    console.warn('[fetchCampusInfo] Backend error:', result.error,
+      '→ Falling back to localStorage. Did you redeploy the Apps Script?');
+  } else {
+    // Backend works — clear any stale local copy so it can't shadow the sheet
+    localStorage.removeItem('unicol_about_' + college);
+    return result.data;
+  }
+
+  const local = localStorage.getItem('unicol_about_' + college);
+  return local ? JSON.parse(local) : null;
+}
+
+async function saveCampusInfo(info) {
+  const result = await apiPost({ action: 'updateCampusInfo', info });
+
+  if (result.error || !result.data) {
+    console.warn('[saveCampusInfo] Backend save failed:', result.error,
+      '→ Saved to localStorage only. Did you redeploy the Apps Script?');
+    localStorage.setItem('unicol_about_' + info.college, JSON.stringify(info));
+    return { ...info, fallback: true };
+  }
+
+  localStorage.removeItem('unicol_about_' + info.college);
+  return result.data;
 }
 
 // =========================

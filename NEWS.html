@@ -482,6 +482,220 @@
         pointer-events: auto;
       }
 
+
+      /* ========================================
+         ABOUT PANEL (slides in from the left)
+         ======================================== */
+      .about-open-btn {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 16px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+      }
+
+      .about-open-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        filter: brightness(1.05);
+      }
+
+      .about-open-btn:active {
+        transform: translateY(0);
+        filter: brightness(0.98);
+      }
+
+      .about-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0);
+        z-index: 99998;
+        pointer-events: none;
+        transition: background 0.3s ease;
+      }
+
+      .about-backdrop.visible {
+        background: rgba(0, 0, 0, 0.35);
+        pointer-events: auto;
+      }
+
+      .about-panel {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        width: min(440px, 92vw);
+        background: #fff;
+        z-index: 99999;
+        box-shadow: 20px 0 60px rgba(0, 0, 0, 0.25);
+        transform: translateX(-105%);
+        transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .about-panel.open {
+        transform: translateX(0);
+      }
+
+      .about-panel-header {
+        padding: 22px 24px 18px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      .about-panel-header h2 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 700;
+      }
+
+      .about-campus-name {
+        font-size: 12px;
+        opacity: 0.85;
+        margin-top: 4px;
+        line-height: 1.4;
+      }
+
+      .about-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        border: none;
+        background: rgba(255, 255, 255, 0.2);
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .about-close:hover {
+        background: rgba(255, 255, 255, 0.35);
+        transform: scale(1.08);
+      }
+
+      .about-panel-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 22px 24px;
+      }
+
+      .about-heading {
+        font-size: 22px;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin: 0 0 10px 0;
+        line-height: 1.3;
+      }
+
+      .about-description {
+        font-size: 15px;
+        line-height: 1.7;
+        color: #444;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+      }
+
+      .about-updated {
+        font-size: 12px;
+        color: #999;
+        margin-top: 24px;
+      }
+
+      .about-actions {
+        margin-top: 24px;
+        display: flex;
+        gap: 10px;
+      }
+
+      .about-actions button {
+        padding: 10px 22px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        background: #f5f5f5;
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .about-actions button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      .about-btn-edit:hover { background: #eee; }
+
+      .about-btn-save {
+        background: #667eea !important;
+        border-color: #667eea !important;
+        color: #fff !important;
+      }
+
+      .about-btn-save:hover {
+        background: #5a6fd6 !important;
+      }
+
+      .about-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 14px 0 6px;
+      }
+
+      .about-input {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        font-size: 15px;
+        font-family: inherit;
+        color: #333;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .about-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+      }
+
+      .about-textarea {
+        min-height: 180px;
+        resize: vertical;
+        line-height: 1.6;
+      }
+
+      @media (max-width: 768px) {
+        .filters-sidebar .about-open-btn {
+          flex-basis: 100%;
+          margin-bottom: 12px;
+        }
+      }
+
       /* ========================================
          MODALS (modernized from U3)
          ======================================== */
@@ -841,6 +1055,10 @@
 
       <!-- Left: Filters -->
       <aside class="filters-sidebar">
+        <button class="about-open-btn" id="aboutOpenBtn" onclick="openAboutPanel()">
+          &#9432; About this Campus
+        </button>
+
         <h3>Filters</h3>
 
         <div class="filter-group">
@@ -908,6 +1126,17 @@
 
     </div>
 
+    <!-- About Panel (slides in from the left) -->
+    <div id="aboutBackdrop" class="about-backdrop" onclick="closeAboutPanel()"></div>
+    <aside id="aboutPanel" class="about-panel" aria-hidden="true">
+      <div class="about-panel-header">
+        <button class="about-close" onclick="closeAboutPanel()" aria-label="Close about panel">&#10005;</button>
+        <h2>About Campus</h2>
+        <div class="about-campus-name" id="aboutCampusName"></div>
+      </div>
+      <div class="about-panel-body" id="aboutBody"></div>
+    </aside>
+
     <!-- Post Modal -->
     <div id="postModal" class="post-modal hidden">
       <div class="post-modal-backdrop" onclick="closePostModal()"></div>
@@ -935,6 +1164,7 @@
     </div>
 
     <script src="news.js"></script>
+    <script src="about.js"></script>
     <script src="functions.js"></script>
   </body>
 </html>

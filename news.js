@@ -422,9 +422,13 @@ function openPost(postId) {
   }
 }
 
+let postModalToken = 0;
+
 async function showPostModal(postId) {
   const modal = document.getElementById("postModal");
   const content = document.getElementById("postModalContent");
+
+  const token = ++postModalToken;   // invalidate any previous open's pending renders
 
   document.documentElement.classList.add("modal-open");
   document.body.classList.add("modal-open");
@@ -451,8 +455,11 @@ async function showPostModal(postId) {
     const elapsed = Date.now() - startTime;
     const remaining = Math.max(0, 200 - elapsed);
 
+    if (token !== postModalToken) return;   // modal was closed/reopened — abandon stale result
+
     if (error || !post) {
       setTimeout(() => {
+        if (token !== postModalToken) return;   // guard inside the timeout too
         content.innerHTML = `
           <div style="text-align:center;padding:40px 20px;">
             <h2 style="margin-bottom:12px;">Error</h2>
@@ -464,6 +471,8 @@ async function showPostModal(postId) {
     }
 
     setTimeout(() => {
+      if (token !== postModalToken) return;   // stale render — don't overwrite newer content
+
       const adminButtons = isAdmin ? `
         <button class="modal-action-btn" onclick="editPost(${post.id})">Edit Post</button>
         <button class="modal-action-btn delete-btn" onclick="deletePost(${post.id})">Delete Post</button>
@@ -505,6 +514,7 @@ async function showPostModal(postId) {
 
   } catch (err) {
     console.error("Error loading post:", err);
+    if (token !== postModalToken) return;
     content.innerHTML = `
       <div style="text-align:center;padding:40px 20px;">
         <h2 style="margin-bottom:12px;">Error</h2>
@@ -514,6 +524,113 @@ async function showPostModal(postId) {
     `;
   }
 }
+
+function closePostModal() {
+  postModalToken++;   // invalidate any pending render for the open being closed
+
+  const modal = document.getElementById("postModal");
+  modal.classList.add("closing");
+
+  setTimeout(() => {
+    modal.classList.remove("show", "closing");
+    modal.classList.add("hidden");
+    document.documentElement.classList.remove("modal-open");
+    document.body.classList.remove("modal-open");
+  }, 200);
+}
+
+// async function showPostModal(postId) {
+//   const modal = document.getElementById("postModal");
+//   const content = document.getElementById("postModalContent");
+
+//   document.documentElement.classList.add("modal-open");
+//   document.body.classList.add("modal-open");
+//   modal.classList.remove("hidden", "closing");
+//   modal.classList.add("show");
+
+//   content.innerHTML = `
+//     <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px;">
+//       <div style="width:42px;height:42px;border:4px solid rgba(0,0,0,0.15);border-top-color:rgba(0,0,0,0.65);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
+//       <div style="font-size:16px;color:rgba(0,0,0,0.7);">Loading post...</div>
+//     </div>
+//     <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+//   `;
+
+//   const startTime = Date.now();
+
+//   try {
+//     const { data: post, error } = await db
+//       .from("posts")
+//       .select("*")
+//       .eq("id", postId)
+//       .single();
+
+//     const elapsed = Date.now() - startTime;
+//     const remaining = Math.max(0, 200 - elapsed);
+
+//     if (error || !post) {
+//       setTimeout(() => {
+//         content.innerHTML = `
+//           <div style="text-align:center;padding:40px 20px;">
+//             <h2 style="margin-bottom:12px;">Error</h2>
+//             <p>Could not load post. Please try again.</p>
+//           </div>
+//         `;
+//       }, remaining);
+//       return;
+//     }
+
+//     setTimeout(() => {
+//       const adminButtons = isAdmin ? `
+//         <button class="modal-action-btn" onclick="editPost(${post.id})">Edit Post</button>
+//         <button class="modal-action-btn delete-btn" onclick="deletePost(${post.id})">Delete Post</button>
+//       ` : '';
+
+//       const bannerHtml = post.banner ?
+//         `<img src="${post.banner}" class="post-banner" onclick="openImageOverlay('${post.banner}')" title="Click to view full size">` :
+//         "";
+
+//       const courseNames = {
+//         'comtech': 'Communication & Information Technology',
+//         'indtech': 'Industrial Technology',
+//         'education': 'Education',
+//         'business': 'Business Administration',
+//         'nursing': 'Nursing',
+//         'arts': 'Arts & Sciences',
+//         'engineering': 'Engineering',
+//         'agri': 'Agriculture & Forestry',
+//         'hospitality': 'Hospitality Management',
+//         'criminology': 'Criminology',
+//         'midwifery': 'Midwifery',
+//         'fisheries': 'Fisheries',
+//         'it-voc': 'IT (Vocational)',
+//         'comp-tech': 'Computer Technician',
+//         'architecture': 'Architecture'
+//       };
+//       const courseDisplay = post.course ? ` | ${courseNames[post.course] || post.course}` : '';
+
+//       content.innerHTML = `
+//         <div class="post-loaded">
+//           ${bannerHtml}
+//           <h2>${post.title}</h2>
+//           <small class="post-date">${post.date}${courseDisplay}</small>
+//           <div>${post.content}</div>
+//           ${adminButtons}
+//         </div>
+//       `;
+//     }, remaining);
+
+//   } catch (err) {
+//     console.error("Error loading post:", err);
+//     content.innerHTML = `
+//       <div style="text-align:center;padding:40px 20px;">
+//         <h2 style="margin-bottom:12px;">Error</h2>
+//         <p>Something went wrong. Please try again.</p>
+//         <button onclick="closePostModal()" style="margin-top:16px;padding:10px 20px;border-radius:8px;border:1px solid #ddd;background:#f5f5f5;cursor:pointer;">Close</button>
+//       </div>
+//     `;
+//   }
+// }
 
 async function deletePost(id) {
   if (!isAdmin) {
@@ -550,17 +667,17 @@ async function deletePost(id) {
   });
 }
 
-function closePostModal() {
-  const modal = document.getElementById("postModal");
-  modal.classList.add("closing");
+// function closePostModal() {
+//   const modal = document.getElementById("postModal");
+//   modal.classList.add("closing");
 
-  setTimeout(() => {
-    modal.classList.remove("show", "closing");
-    modal.classList.add("hidden");
-    document.documentElement.classList.remove("modal-open");
-    document.body.classList.remove("modal-open");
-  }, 200);
-}
+//   setTimeout(() => {
+//     modal.classList.remove("show", "closing");
+//     modal.classList.add("hidden");
+//     document.documentElement.classList.remove("modal-open");
+//     document.body.classList.remove("modal-open");
+//   }, 200);
+// }
 
 function editPost(id) {
   window.location.href = `CREATE_POST.html?edit=${id}`;
