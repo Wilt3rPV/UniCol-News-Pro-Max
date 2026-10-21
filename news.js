@@ -216,13 +216,15 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 function showPageLoading() {
   if (!container) return;
-  container.innerHTML = `
-    <div class="news-empty" id="pageLoading">
-      <div style="width:40px;height:40px;border:4px solid #ddd;border-top-color:#667eea;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px;"></div>
-      <div style="color:#888;font-size:16px;">Loading news...</div>
-    </div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-  `;
+  const skeletonCard = `
+    <div class="news-card-skeleton" aria-hidden="true">
+      <div class="skel skel-img"></div>
+      <div class="skel-body">
+        <div class="skel" style="width:85%"></div>
+        <div class="skel" style="width:60%"></div>
+      </div>
+    </div>`;
+  container.innerHTML = skeletonCard.repeat(6);
 }
 
 // ============================================================
@@ -323,45 +325,115 @@ async function removeCalendarRow(id) {
   }
 }
 
+// --- Calendar view state ---
+let calendarRows = [];
+let calendarFocusLast = false;
+const calendarSaveTimers = {};
+const CALENDAR_MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+// Turns free text like "Mar 10", "March 10-12" or "10 March" into tile parts.
+// Returns null for anything else (e.g. "Second semester").
+function parseCalendarDate(text) {
+  const raw = String(text || '').trim();
+  let m = raw.match(/^([A-Za-z]{3,9})\.?\s+(\d{1,2})(?!\d)/);
+  let month, day;
+  if (m) {
+    month = m[1]; day = m[2];
+  } else {
+    m = raw.match(/^(\d{1,2})\s+([A-Za-z]{3,9})/);
+    if (!m) return null;
+    day = m[1]; month = m[2];
+  }
+  const idx = CALENDAR_MONTHS.indexOf(month.slice(0, 3).toLowerCase());
+  if (idx === -1) return null;
+  const rest = raw.slice(m[0].length).trim();
+  return {
+    month: CALENDAR_MONTHS[idx].toUpperCase(),
+    day: String(Number(day)),
+    extra: rest ? raw : ''   // ranges / years: keep the full text as a second line
+  };
+}
+
+function calendarTileHtml(parsed, rawDate) {
+  if (parsed) {
+    return `<div class="cal-date"><span class="cal-month">${parsed.month}</span><span class="cal-day">${parsed.day}</span></div>`;
+  }
+  const t = String(rawDate || '').trim();
+  return `<div class="cal-date cal-date-text"><span>${t ? escapeHtml(t) : 'TBA'}</span></div>`;
+}
+
+function calendarAutoGrow(el) {
+  el.style.height = 'auto';
+  el.style.height = el.scrollHeight + 'px';
+}
+
 async function renderCalendar() {
-  calendarRowsEl.innerHTML = `
-    <div style="text-align:center;padding:40px 20px;color:#888;">
-      <div style="width:32px;height:32px;border:3px solid #eee;border-top-color:#667eea;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
-      <div style="font-size:14px;">Loading calendar...</div>
-    </div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-  `;
+  const countEl = document.getElementById('calendarCount');
 
-  const rows = await loadCalendar();
+  calendarRowsEl.innerHTML =
+    '<div class="cal-skeleton"></div><div class="cal-skeleton"></div><div class="cal-skeleton"></div>';
 
-  calendarRowsEl.innerHTML = "";
+  calendarRows = await loadCalendar();
+  calendarRowsEl.innerHTML = '';
 
-  if (rows.length === 0) {
-    calendarRowsEl.innerHTML = `<div style="opacity:.75; padding: 20px; text-align:center; color:#888;">No events scheduled.</div>`;
+  if (countEl) {
+    countEl.hidden = calendarRows.length === 0;
+    countEl.textContent = calendarRows.length + (calendarRows.length === 1 ? ' event' : ' events');
+  }
+
+  if (calendarRows.length === 0) {
+    calendarRowsEl.innerHTML = `
+      <div class="cal-empty">
+        <strong>No events scheduled yet</strong>
+        ${isAdmin ? 'Use "Add event" below to create the first one.' : 'Check back later for upcoming dates.'}
+      </div>`;
     return;
   }
 
-  rows.forEach((row) => {
-    const div = document.createElement("div");
-    div.className = "calendar-row";
+  calendarRows.forEach((row) => {
+    const item = document.createElement('div');
 
-    const removeButton = isAdmin ?
-      `<button class="remove-calendar" title="Remove" data-remove="${row.id}">X</button>` :
-      '';
-
-    const readonlyAttr = !isAdmin ? 'readonly' : '';
-
-    div.innerHTML = `
-      <textarea rows="1" placeholder="Date (e.g. Mar 10)" data-field="date" data-id="${row.id}" ${readonlyAttr}>${escapeHtml(row.date)}</textarea>
-      <textarea rows="1" placeholder="Event (e.g. Start of classes)" data-field="label" data-id="${row.id}" ${readonlyAttr}>${escapeHtml(row.label)}</textarea>
-      ${removeButton}
-    `;
-    calendarRowsEl.appendChild(div);
+    if (isAdmin) {
+      item.className = 'cal-item cal-item-edit';
+      item.innerHTML = `
+        <input type="text" class="cal-input cal-input-date" data-field="date" data-id="${row.id}"
+               placeholder="Mar 10" maxlength="40" aria-label="Date" value="${escapeHtml(row.date)}">
+        <textarea rows="1" class="cal-input cal-input-label" data-field="label" data-id="${row.id}"
+               placeholder="Event (e.g. Start of classes)" aria-label="Event">${escapeHtml(row.label)}</textarea>
+        <button type="button" class="cal-remove" data-remove="${row.id}" title="Remove event" aria-label="Remove event">&times;</button>
+      `;
+    } else {
+      const parsed = parseCalendarDate(row.date);
+      const label = String(row.label || '').trim();
+      item.className = 'cal-item';
+      item.innerHTML = `
+        ${calendarTileHtml(parsed, row.date)}
+        <div class="cal-body">
+          <div class="cal-label${label ? '' : ' is-empty'}">${label ? escapeHtml(label) : 'Untitled event'}</div>
+          ${parsed && parsed.extra ? `<div class="cal-extra">${escapeHtml(parsed.extra)}</div>` : ''}
+        </div>
+      `;
+    }
+    calendarRowsEl.appendChild(item);
   });
+
+  if (isAdmin) {
+    calendarRowsEl.querySelectorAll('textarea').forEach(calendarAutoGrow);
+    if (calendarFocusLast) {
+      const dates = calendarRowsEl.querySelectorAll('.cal-input-date');
+      const last = dates[dates.length - 1];
+      if (last) {
+        last.focus();
+        last.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    }
+  }
+  calendarFocusLast = false;
 }
 
 if (calendarRowsEl) {
-  calendarRowsEl.addEventListener("input", async (e) => {
+  // Edits are kept in memory and saved shortly after the admin stops typing
+  calendarRowsEl.addEventListener('input', (e) => {
     const id = Number(e.target.dataset.id);
     const field = e.target.dataset.field;
     if (!id || !field) return;
@@ -370,34 +442,40 @@ if (calendarRowsEl) {
       return;
     }
 
-    const rows = await loadCalendar();
-    const row = rows.find(r => r.id === id);
-    if (!row) return;
+    if (e.target.tagName === 'TEXTAREA') calendarAutoGrow(e.target);
 
+    const row = calendarRows.find(r => r.id === id);
+    if (!row) return;
     row[field] = e.target.value;
-    await saveCalendarRow(row);
+
+    clearTimeout(calendarSaveTimers[id]);
+    calendarSaveTimers[id] = setTimeout(() => saveCalendarRow(row), 500);
   });
 
-  calendarRowsEl.addEventListener("click", async (e) => {
-    const removeId = Number(e.target.dataset.remove);
+  calendarRowsEl.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-remove]');
+    if (!btn) return;
+    const removeId = Number(btn.dataset.remove);
     if (!removeId) return;
     if (!isAdmin) {
       e.preventDefault();
       return;
     }
 
+    clearTimeout(calendarSaveTimers[removeId]);
     await removeCalendarRow(removeId);
     await renderCalendar();
   });
 }
 
 if (addBtn) {
-  addBtn.addEventListener("click", async () => {
+  addBtn.addEventListener('click', async () => {
     try {
-      await createCalendarRow({ college: selectedCollege, date: "", label: "" });
+      await createCalendarRow({ college: selectedCollege, date: '', label: '' });
+      calendarFocusLast = true;
       await renderCalendar();
     } catch (err) {
-      console.error("Error adding calendar row:", err);
+      console.error('Error adding calendar row:', err);
     }
   });
 }
@@ -436,11 +514,16 @@ async function showPostModal(postId) {
   modal.classList.add("show");
 
   content.innerHTML = `
-    <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px;">
-      <div style="width:42px;height:42px;border:4px solid rgba(0,0,0,0.15);border-top-color:rgba(0,0,0,0.65);border-radius:50%;animation:spin 0.8s linear infinite;"></div>
-      <div style="font-size:16px;color:rgba(0,0,0,0.7);">Loading post...</div>
+    <div class="post-skeleton" aria-hidden="true">
+      <div class="skel skel-banner"></div>
+      <div class="skel skel-title"></div>
+      <div class="skel skel-date"></div>
+      <div class="skel skel-line w100"></div>
+      <div class="skel skel-line w90"></div>
+      <div class="skel skel-line w100"></div>
+      <div class="skel skel-line w75"></div>
+      <div class="skel skel-line w55"></div>
     </div>
-    <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
   `;
 
   const startTime = Date.now();
@@ -982,26 +1065,57 @@ async function initAuth() {
 }
 
 function updateNewsUI(user, admin) {
-  const createBtn = document.getElementById('createPostBtn');
-  const loginBtn = document.getElementById('adminLoginBtn');
-  const logoutBtn = document.getElementById('logoutBtn');
   const addCalendarBtn = document.getElementById('addCalendarRowBtn');
-  const registerBtn = document.getElementById('registerLoginBtn');
+  const loginBtn = document.getElementById('adminLoginBtn');
+  const accountMenu = document.getElementById('accountMenu');
 
   if (user && admin) {
-    createBtn?.classList.add('visible');
-    logoutBtn?.classList.add('visible');
     addCalendarBtn?.classList.add('visible');
-    registerBtn?.classList.add('visible');
     loginBtn?.classList.add('hidden');
+    if (accountMenu) {
+      accountMenu.classList.add('visible');
+      const email = user.email || '';
+      const emailEl = document.getElementById('accountEmail');
+      emailEl.textContent = email;
+      emailEl.title = email;
+      document.getElementById('accountPosition').textContent = user.position || 'Admin';
+      document.getElementById('accountAvatar').textContent = (email.charAt(0) || 'A').toUpperCase();
+    }
   } else {
-    createBtn?.classList.remove('visible');
-    logoutBtn?.classList.remove('visible');
     addCalendarBtn?.classList.remove('visible');
-    registerBtn?.classList.remove('visible');
     loginBtn?.classList.remove('hidden');
+    accountMenu?.classList.remove('visible');
+    closeAccountMenu();
   }
 }
+
+// ============================================================
+// ACCOUNT MENU (dropdown in the header)
+// ============================================================
+function toggleAccountMenu(e) {
+  e?.stopPropagation();
+  const menu = document.getElementById('accountMenu');
+  if (!menu) return;
+  const open = !menu.classList.contains('open');
+  menu.classList.toggle('open', open);
+  document.getElementById('accountTrigger')?.setAttribute('aria-expanded', String(open));
+}
+
+function closeAccountMenu() {
+  const menu = document.getElementById('accountMenu');
+  if (!menu) return;
+  menu.classList.remove('open');
+  document.getElementById('accountTrigger')?.setAttribute('aria-expanded', 'false');
+}
+
+document.addEventListener('click', (e) => {
+  const menu = document.getElementById('accountMenu');
+  if (menu && !menu.contains(e.target)) closeAccountMenu();
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeAccountMenu();
+});
 
 // ============================================================
 // IMAGE OVERLAY
@@ -1058,7 +1172,7 @@ function renderTagFilters() {
 
   // "All" chip — clears everything when active
   const allChip = document.createElement('button');
-  allChip.className = 'tag-chip' + (activeTagFilters.length === 0 ? ' active' : '');
+  allChip.className = 'tag-chip tag-chip-all' + (activeTagFilters.length === 0 ? ' active' : '');
   allChip.textContent = 'All';
   allChip.onclick = () => {
     activeTagFilters = [];

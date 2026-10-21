@@ -83,6 +83,146 @@
       }
 
       /* ========================================
+         ACCOUNT MENU - admin email + position, buttons in a dropdown
+         ======================================== */
+      .news-header { position: relative; z-index: 100; }
+
+      .account-menu { position: relative; }
+
+      .account-trigger {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-height: 48px;
+        max-width: 300px;
+        padding: 6px 14px 6px 8px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,255,255,0.4);
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        color: #fff;
+        font-family: inherit;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .account-trigger:hover,
+      .account-menu.open .account-trigger {
+        background: rgba(255,255,255,0.25);
+      }
+
+      .account-trigger:focus-visible {
+        outline: 3px solid rgba(255,255,255,0.6);
+        outline-offset: 2px;
+      }
+
+      .account-avatar {
+        flex: 0 0 auto;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.28);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: 700;
+      }
+
+      .account-info {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        line-height: 1.25;
+      }
+
+      .account-email {
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .account-position {
+        font-size: 11px;
+        opacity: 0.85;
+      }
+
+      .account-chevron {
+        flex: 0 0 auto;
+        width: 7px;
+        height: 7px;
+        margin: 0 2px 3px 2px;
+        border-right: 2px solid #fff;
+        border-bottom: 2px solid #fff;
+        transform: rotate(45deg);
+        transition: transform 0.2s ease;
+      }
+
+      .account-menu.open .account-chevron { transform: rotate(-135deg) translate(-2px, -2px); }
+
+      .account-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        min-width: 230px;
+        max-width: calc(100vw - 32px);
+        padding: 6px;
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(0,0,0,0.18);
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        transition: opacity 0.15s ease, transform 0.15s ease;
+      }
+
+      .account-menu.open .account-dropdown {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+      }
+
+      .menu-item {
+        display: block;
+        width: 100%;
+        padding: 10px 12px;
+        border: none;
+        border-radius: 8px;
+        background: transparent;
+        color: #333;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .menu-item:hover,
+      .menu-item:focus-visible {
+        background: rgba(102, 126, 234, 0.1);
+        color: #5a6fd6;
+        outline: none;
+      }
+
+      .menu-item-danger { color: #c0392b; }
+
+      .menu-item-danger:hover,
+      .menu-item-danger:focus-visible {
+        background: rgba(255, 100, 100, 0.14);
+        color: #c0392b;
+      }
+
+      .menu-divider {
+        height: 1px;
+        background: #eee;
+        margin: 6px 4px;
+      }
+
+      /* ========================================
          MAIN LAYOUT - U2 structure kept
          ======================================== */
       .news-layout {
@@ -347,82 +487,278 @@
       }
 
       /* ========================================
-         RIGHT - Calendar (modernized from U3, U2 layout)
+         RIGHT - Academic Calendar
          ======================================== */
       .calendar-sidebar {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        height: 100%;
+        overflow: hidden;
         border-left: 1px solid #ddd;
         background: #fff;
-        padding: 20px;
-        height: 100%;
-        overflow-y: auto;
       }
 
-      .calendar-header {
-        margin-bottom: 20px;
-        padding-bottom: 16px;
-        border-bottom: 2px solid #f0f0f0;
+      .cal-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 16px;
+        border-bottom: 1px solid #eee;
       }
 
-      .calendar-header h2 {
-        font-size: 20px;
+      .cal-header-icon {
+        flex: 0 0 auto;
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .cal-header-icon svg { width: 20px; height: 20px; }
+
+      .cal-header-text { min-width: 0; flex: 1; }
+
+      .cal-header h2 {
+        margin: 0;
+        font-size: 16px;
         font-weight: 700;
         color: #333;
-        margin: 0;
+        line-height: 1.25;
       }
 
-      .calendar-rows {
+
+      .cal-count {
+        flex: 0 0 auto;
+        padding: 3px 10px;
+        border-radius: 999px;
+        background: rgba(102, 126, 234, 0.12);
+        color: #5a6fd6;
+        font-size: 11px;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .cal-scroll {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 16px;
+      }
+
+      .cal-list {
         display: flex;
         flex-direction: column;
         gap: 10px;
       }
 
-      .calendar-row {
+      /* One event */
+      .cal-item {
         display: flex;
-        gap: 14px;
-        padding: 12px;
-        background: #f8f8f8;
-        border-radius: 12px;
+        align-items: center;
+        gap: 12px;
+        padding: 10px;
+        background: #fff;
         border: 1px solid #eee;
-        transition: all 0.2s ease;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
       }
 
-      .calendar-row:hover {
-        background: #f0f0f0;
-        transform: translateX(4px);
+      .cal-item:hover {
+        transform: translateY(-2px);
+        border-color: #dfe3fb;
+        box-shadow: 0 6px 16px rgba(102, 126, 234, 0.12);
       }
 
-      .calendar-date {
+      /* Date tile - looks like a torn-off calendar page */
+      .cal-date {
+        flex: 0 0 auto;
+        width: 52px;
+        border-radius: 10px;
+        border: 1px solid #e3e6fa;
+        background: #fff;
+        overflow: hidden;
+        text-align: center;
+      }
+
+      .cal-month {
+        display: block;
+        padding: 3px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        font-size: 10px;
         font-weight: 700;
-        font-size: 13px;
-        color: #667eea;
-        white-space: nowrap;
-        min-width: 80px;
+        letter-spacing: 0.08em;
       }
 
-      .calendar-event {
-        font-size: 13px;
-        color: #555;
+      .cal-day {
+        display: block;
+        padding: 4px 0 5px;
+        font-size: 22px;
+        font-weight: 800;
+        line-height: 1.1;
+        color: #333;
+      }
+
+      /* Dates that are not "Mon 10" (e.g. "Second semester") */
+      .cal-date-text {
+        min-height: 52px;
+        padding: 6px 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(102, 126, 234, 0.08);
+        color: #5a6fd6;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.25;
+        overflow-wrap: anywhere;
+      }
+
+      .cal-body { min-width: 0; flex: 1; }
+
+      .cal-label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #333;
         line-height: 1.4;
+        overflow-wrap: anywhere;
       }
 
-      .calendar-add {
+      .cal-label.is-empty { color: #aaa; font-weight: 500; font-style: italic; }
+
+      .cal-extra {
+        margin-top: 2px;
+        font-size: 12px;
+        color: #888;
+      }
+
+      /* Admin editing */
+      .cal-item-edit {
+        position: relative;
+        display: grid;
+        grid-template-columns: 84px minmax(0, 1fr);
+        gap: 8px;
+        align-items: start;
+        padding: 10px 36px 10px 10px;
+      }
+
+      .cal-input {
         width: 100%;
-        margin-top: 16px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #ddd;
+        background: #fff;
+        font-family: inherit;
+        font-size: 13px;
+        color: #333;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .cal-input-date { font-weight: 700; color: #5a6fd6; }
+
+      .cal-input-label {
+        resize: none;
+        overflow: hidden;
+        line-height: 1.4;
+        min-height: 36px;
+      }
+
+      .cal-input:hover { border-color: #c9cdf5; }
+
+      .cal-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+      }
+
+      .cal-remove {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 24px;
+        height: 24px;
+        padding: 0;
+        border: none;
+        border-radius: 50%;
+        background: transparent;
+        color: #aaa;
+        font-size: 18px;
+        line-height: 1;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .cal-remove:hover,
+      .cal-remove:focus-visible {
+        background: rgba(255, 100, 100, 0.15);
+        color: #c0392b;
+        outline: none;
+      }
+
+      /* Empty + loading */
+      .cal-empty {
+        padding: 32px 16px;
+        border: 2px dashed #e5e5e5;
+        border-radius: 12px;
+        text-align: center;
+        color: #999;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+
+      .cal-empty strong {
+        display: block;
+        margin-bottom: 4px;
+        font-size: 14px;
+        color: #777;
+      }
+
+      .cal-skeleton {
+        height: 66px;
+        border-radius: 12px;
+        background: linear-gradient(90deg, #f3f3f3 25%, #fafafa 50%, #f3f3f3 75%);
+        background-size: 200% 100%;
+        animation: calShimmer 1.4s ease-in-out infinite;
+      }
+
+      @keyframes calShimmer {
+        from { background-position: 200% 0; }
+        to   { background-position: -200% 0; }
+      }
+
+      .cal-add {
+        width: 100%;
+        margin-top: 14px;
         padding: 12px;
+        justify-content: center;
         border-radius: 12px;
         border: 2px dashed #ddd;
         background: transparent;
         color: #888;
+        font-family: inherit;
         font-size: 13px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.2s ease;
       }
 
-      .calendar-add:hover {
+      .cal-add:hover,
+      .cal-add:focus-visible {
         border-color: #667eea;
         color: #667eea;
         background: rgba(102, 126, 234, 0.05);
+        outline: none;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .cal-skeleton { animation: none; }
+        .cal-item { transition: none; }
       }
 
       /* Tag filter chips below search bar */
@@ -455,6 +791,11 @@
       .tag-chip.active {
         color: #fff !important;
         border-color: transparent !important;
+      }
+
+      /* "All" chip has no tag colour, so give its active state one (was white text on white) */
+      .tag-chip.tag-chip-all.active {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       }
 
       /* Tag container — sits on top of the card image */
@@ -611,7 +952,7 @@
       }
 
       .about-description {
-        font-size: 15px;
+        font-size: 18px;
         line-height: 1.7;
         color: #444;
         white-space: pre-wrap;
@@ -970,6 +1311,8 @@
           height: auto;
           min-height: 300px;
         }
+
+        .cal-scroll { overflow: visible; }
       }
 
       @media (max-width: 480px) {
@@ -989,7 +1332,8 @@
           grid-template-columns: 1fr;
         }
 
-        .news-card {
+        .news-card,
+        .news-card-skeleton {
           height: auto;
           aspect-ratio: 4 / 5;
         }
@@ -1051,9 +1395,27 @@
       <img src="unicols.png" class="banner-logo" alt="UNI-COL News" onclick="window.location.href='index.html'">
       <h1 id="collegeName"></h1>
       <div class="admin-actions">
-        <button class="createpost-btn admin-only" id="createPostBtn" onclick="goToLogin()">Register</button>
-        <button class="createpost-btn admin-only" id="registerLoginBtn" onclick="goCreate()">Create Post</button>
-        <button class="createpost-btn logout-btn admin-only" id="logoutBtn" onclick="handleLogout()">Logout</button>
+        <!-- Signed-in admin: one chip that opens the menu -->
+        <div class="account-menu admin-only" id="accountMenu">
+          <button type="button" class="account-trigger" id="accountTrigger"
+                  aria-haspopup="menu" aria-expanded="false" aria-controls="accountDropdown"
+                  onclick="toggleAccountMenu(event)">
+            <span class="account-avatar" id="accountAvatar">A</span>
+            <span class="account-info">
+              <span class="account-email" id="accountEmail"></span>
+              <span class="account-position" id="accountPosition">Admin</span>
+            </span>
+            <span class="account-chevron" aria-hidden="true"></span>
+          </button>
+          <div class="account-dropdown" id="accountDropdown" role="menu">
+            <button type="button" class="menu-item" role="menuitem" onclick="goCreate()">Create post</button>
+            <button type="button" class="menu-item" role="menuitem" onclick="goToLogin()">Register new admin</button>
+            <div class="menu-divider"></div>
+            <button type="button" class="menu-item menu-item-danger" role="menuitem" onclick="handleLogout()">Log out</button>
+          </div>
+        </div>
+
+        <!-- Signed out -->
         <button class="createpost-btn" id="adminLoginBtn" onclick="goToLogin()">Admin Login</button>
       </div>
     </header>
@@ -1123,13 +1485,23 @@
 
       <!-- Right: Calendar (full height) -->
       <aside class="calendar-sidebar">
-        <div class="calendar-header">
-          <h2>Academic Calendar</h2>
+        <div class="cal-header">
+          <div class="cal-header-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4.5" width="18" height="16" rx="3"></rect>
+              <path d="M3 9.5h18M8 2.5v4M16 2.5v4"></path>
+            </svg>
+          </div>
+          <div class="cal-header-text">
+            <h2>Academic Calendar</h2>
+          </div>
+          <span class="cal-count" id="calendarCount" hidden></span>
         </div>
 
-        <div id="calendarRows" class="calendar-rows"></div>
-
-        <button id="addCalendarRowBtn" class="calendar-add admin-only">+ Add Event</button>
+        <div class="cal-scroll">
+          <div id="calendarRows" class="cal-list"></div>
+          <button id="addCalendarRowBtn" class="cal-add admin-only" type="button">+ Add event</button>
+        </div>
       </aside>
 
     </div>

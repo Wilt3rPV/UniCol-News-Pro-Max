@@ -1,18 +1,231 @@
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create a post</title>
-    <link rel="stylesheet" href="createpost.css">
     <link rel="stylesheet" href="style.css">
-    
+
     <script src="database.js"></script>
     <style>
-      /* Image upload styles */
-      .image-upload-btn {
-        position: relative;
-        overflow: hidden;
+      /* ========================================
+         BASE - same foundation as NEWS.html
+         ======================================== */
+      * { box-sizing: border-box; }
+
+      body {
+        font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        background: #f5f5f5;
+        color: #333;
+        opacity: 0;
+        transition: opacity 0.4s ease;
       }
-      
+      body.loaded { opacity: 1; }
+
+      .hidden { display: none !important; }
+
+      /* ========================================
+         HEADER - purple gradient, same as news page
+         ======================================== */
+      .news-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding: 16px 32px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+      }
+
+      .news-header .banner-logo {
+        height: 48px;
+        width: auto;
+        cursor: pointer;
+        filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+        transition: transform 0.2s ease;
+      }
+
+      .news-header .banner-logo:hover { transform: scale(1.05); }
+
+      .news-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+        text-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      }
+
+      .news-header .header-actions {
+        margin-left: auto;
+        display: flex;
+        gap: 8px;
+      }
+
+      .header-btn {
+        padding: 8px 16px;
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.4);
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 600;
+        font-family: inherit;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .header-btn:hover {
+        background: rgba(255,255,255,0.25);
+        transform: translateY(-2px);
+      }
+
+      /* ========================================
+         LAYOUT - editor on the left, settings on the right
+         ======================================== */
+      .create-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 340px;
+        gap: 24px;
+        align-items: start;
+        max-width: 1280px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+
+      .panel {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        padding: 24px;
+      }
+
+      .panel-side {
+        position: sticky;
+        top: 24px;
+      }
+
+      /* ========================================
+         FIELDS
+         ======================================== */
+      .field-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 700;
+        color: #777;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin: 0 0 6px;
+      }
+
+      .field + .field { margin-top: 20px; }
+
+      .field-hint {
+        font-size: 12px;
+        color: #999;
+        margin-top: 6px;
+        line-height: 1.4;
+      }
+
+      .text-input,
+      .field-select {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid #ddd;
+        background: #fff;
+        font-family: inherit;
+        font-size: 15px;
+        color: #333;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .text-input {
+        font-size: 22px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        padding: 12px 14px;
+        color: #1a1a1a;
+      }
+
+      .text-input::placeholder { color: #bbb; font-weight: 700; }
+
+      .field-select { cursor: pointer; }
+
+      .field-select:disabled {
+        background: #f5f5f5;
+        color: #888;
+        cursor: not-allowed;
+      }
+
+      .text-input:hover,
+      .field-select:hover:not(:disabled) { border-color: #c9cdf5; }
+
+      .text-input:focus,
+      .field-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        outline: none;
+      }
+
+      /* ========================================
+         EDITOR - toolbar joined to the writing area
+         ======================================== */
+      .editor-shell {
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        background: #fff;
+        overflow: hidden;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .editor-shell:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .editor-toolbar {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 4px;
+        padding: 8px;
+        background: #fafafa;
+        border-bottom: 1px solid #eee;
+      }
+
+      .editor-toolbar button {
+        position: relative;
+        min-width: 36px;
+        height: 36px;
+        padding: 0 12px;
+        border-radius: 8px;
+        border: 1px solid transparent;
+        background: transparent;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 600;
+        color: #444;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+
+      .editor-toolbar button:hover { background: #eee; }
+
+      .editor-toolbar button.active {
+        background: rgba(102, 126, 234, 0.15);
+        color: #5a6fd6;
+      }
+
+      .toolbar-divider {
+        width: 1px;
+        height: 20px;
+        background: #ddd;
+        margin: 0 4px;
+      }
+
+      /* Image insert button: file input sits invisibly on top */
+      .image-upload-btn { overflow: hidden; }
+
       .image-upload-btn input[type="file"] {
         position: absolute;
         inset: 0;
@@ -20,7 +233,33 @@
         cursor: pointer;
       }
 
-      /* Content image in editor - LIMITED SIZE */
+      .editor-toolbar .toolbar-delete {
+        margin-left: auto;
+        background: rgba(255, 100, 100, 0.12);
+        border-color: rgba(255, 150, 150, 0.4);
+        color: #c0392b;
+      }
+
+      .editor-toolbar .toolbar-delete:hover { background: rgba(255, 100, 100, 0.22); }
+
+      .editor {
+        min-height: 380px;
+        padding: 16px 18px;
+        font-size: 17px;
+        line-height: 1.7;
+        color: #333;
+        background: #fff;
+        outline: none;
+        overflow-wrap: break-word;
+      }
+
+      .editor:empty::before {
+        content: attr(data-placeholder);
+        color: #aaa;
+        pointer-events: none;
+      }
+
+      /* Content images in editor - limited size */
       .editor img {
         max-width: 500px !important;
         max-height: 500px !important;
@@ -33,17 +272,137 @@
         display: block;
       }
 
-      /* Image hover effect in editor */
-      .editor img:hover {
-        box-shadow: 0 0 0 3px rgba(124, 132, 140, 0.5);
+      .editor img:hover { box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.35); }
+      .editor img.selected { box-shadow: 0 0 0 3px #667eea; }
+
+      /* ========================================
+         BANNER PICKER - dashed drop style like "+ Add Event"
+         ======================================== */
+      #bannerPreview {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        border-radius: 10px;
+        margin-bottom: 10px;
       }
 
-      /* Selected image in editor */
-      .editor img.selected {
-        box-shadow: 0 0 0 3px #7c848c;
+      .file-drop {
+        position: relative;
+        display: block;
+        padding: 18px 12px;
+        border-radius: 12px;
+        border: 2px dashed #ddd;
+        background: transparent;
+        color: #888;
+        font-size: 13px;
+        font-weight: 600;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
       }
 
-      /* Image preview modal - FULL SIZE */
+      .file-drop:hover,
+      .file-drop:focus-within {
+        border-color: #667eea;
+        color: #667eea;
+        background: rgba(102, 126, 234, 0.05);
+      }
+
+      .file-drop input[type="file"] {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+
+      /* ========================================
+         TAG CHIPS - same colours as the news filters
+         ======================================== */
+      .tag-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .tag-chip {
+        --c: #7f8c8d;
+        padding: 6px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--c);
+        background: #fff;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--c);
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.2s ease;
+      }
+
+      .tag-chip[data-tag="event"]        { --c: #e74c3c; }
+      .tag-chip[data-tag="announcement"] { --c: #3498db; }
+      .tag-chip[data-tag="news"]         { --c: #2ecc71; }
+      .tag-chip[data-tag="academic"]     { --c: #9b59b6; }
+      .tag-chip[data-tag="sports"]       { --c: #f39c12; }
+      .tag-chip[data-tag="misc"]         { --c: #7f8c8d; }
+
+      .tag-chip:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      }
+
+      .tag-chip.selected {
+        background: var(--c);
+        color: #fff;
+      }
+
+      /* ========================================
+         PUBLISH
+         ======================================== */
+      .publish-btn {
+        width: 100%;
+        margin-top: 28px;
+        padding: 13px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: #fff;
+        font-family: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        transition: all 0.2s ease;
+      }
+
+      .publish-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        filter: brightness(1.05);
+      }
+
+      .publish-btn:active {
+        transform: translateY(0);
+        filter: brightness(0.98);
+      }
+
+      /* Keyboard focus */
+      .header-btn:focus-visible,
+      .editor-toolbar button:focus-visible,
+      .tag-chip:focus-visible,
+      .publish-btn:focus-visible {
+        outline: 3px solid rgba(102, 126, 234, 0.45);
+        outline-offset: 2px;
+      }
+
+      /* Toast: "publishing" pulses like "loading"/"deleting" */
+      .toast.publishing .toast-text { animation: pulse 1.5s ease-in-out infinite; }
+
+      /* ========================================
+         IMAGE PREVIEW MODAL (click an image in the editor)
+         ======================================== */
       .image-preview-modal {
         position: fixed;
         inset: 0;
@@ -55,9 +414,7 @@
         cursor: zoom-out;
       }
 
-      .image-preview-modal.visible {
-        display: flex;
-      }
+      .image-preview-modal.visible { display: flex; }
 
       .image-preview-modal img {
         max-width: 95vw;
@@ -72,7 +429,7 @@
       .image-preview-modal.visible img {
         transform: scale(1);
         opacity: 1;
-        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), 
+        transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
                     opacity 0.4s ease;
       }
 
@@ -107,139 +464,51 @@
         transform: scale(1.1);
       }
 
-      .editor-toolbar {
-        display: flex;
-        gap: 8px;
-        margin-bottom: 10px;
-        flex-wrap: wrap;
+      /* ========================================
+         RESPONSIVE
+         ======================================== */
+      @media (max-width: 900px) {
+        .create-layout {
+          grid-template-columns: minmax(0, 1fr);
+          padding: 16px;
+          gap: 16px;
+        }
+
+        .panel-side { position: static; }
       }
 
-      .editor-toolbar button {
-        padding: 8px 12px;
-        cursor: pointer;
-        position: relative;
+      @media (max-width: 768px) {
+        .news-header {
+          flex-wrap: wrap;
+          padding: 14px 16px;
+          gap: 12px;
+        }
+
+        .news-header .banner-logo { height: 40px; }
+        .news-header h1 { font-size: 22px; }
+
+        .panel { padding: 18px 16px; }
+
+        .text-input { font-size: 18px; }
+
+        /* 16px prevents iOS zoom on focus */
+        .field-select { font-size: 16px; padding: 12px; }
+
+        .editor { min-height: 280px; font-size: 16px; }
+
+        .editor-toolbar button { min-width: 44px; height: 44px; }
+
+        .editor img { max-width: 100% !important; }
+
+        .publish-btn { padding: 15px; }
       }
 
-      .editor-toolbar button.active {
-        background: #c5c3c6;
+      @media (prefers-reduced-motion: reduce) {
+        * { transition: none !important; animation: none !important; }
       }
-
-      .tag-chips {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 10px;
-      }
-      .tag-chip {
-        padding: 8px 16px;
-        border-radius: 999px;
-        border: 1px solid #ccc;
-        background: #fff;
-        font-size: 14px;
-        font-weight: 600;
-        color: #555;
-        cursor: pointer;
-        transition: all 0.15s ease;
-      }
-      .tag-chip:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      }
-      .tag-chip.selected {
-        color: #fff;
-        border-color: transparent;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-      }
-
-      /* Toast Notification Styles - Glass */
-      /* .toast-container {
-        position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%) translateY(-100px);
-        z-index: 100003;
-        opacity: 0;
-        transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        pointer-events: none;
-      }
-
-      .toast-container.visible {
-        transform: translateX(-50%) translateY(0);
-        opacity: 1;
-      }
-
-      .toast {
-        
-        background: color-mix(in srgb, #4b5964 80%, transparent);
-        backdrop-filter: blur(20px) saturate(180%);
-        border: 1px solid rgba(255, 255, 255, 0.4);
-        
-        color: #fff;
-        padding: 16px 28px;
-        border-radius: 50px;
-        box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-        display: flex;
-        align-items: center;
-        gap: 14px;
-        font-size: 15px;
-        font-weight: 600;
-        min-width: 220px;
-        justify-content: center;
-      }
-
-      .toast-spinner {
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255,255,255,0.3);
-        border-top-color: #fff;
-        border-radius: 50%;
-        animation: toastSpin 0.8s linear infinite;
-        flex-shrink: 0;
-      }
-
-      .toast.success {
-        background: color-mix(in srgb, #51cf66 80%, transparent);
-      }
-
-      .toast.success .toast-spinner {
-        display: none;
-      }
-
-      .toast.success::before {
-        content: "✓";
-        font-size: 20px;
-        font-weight: bold;
-      }
-
-      .toast.error {
-        background: color-mix(in srgb, #ff6b6b 80%, transparent);
-      }
-
-      .toast.error .toast-spinner {
-        display: none;
-      }
-
-      .toast.error::before {
-        content: "✕";
-        font-size: 18px;
-        font-weight: bold;
-      }
-
-      @keyframes toastSpin {
-        to { transform: rotate(360deg); }
-      }
-
-      @keyframes pulse {
-        0%, 100% { opacity: 1; }
-        50% { opacity: 0.7; }
-      }
-
-      .toast.loading .toast-text {
-        animation: pulse 1.5s ease-in-out infinite;
-      } */
     </style>
-  <base target="_blank">
-</head>
+    <base target="_blank">
+  </head>
   <body>
     <!-- Toast Notification Container -->
     <div id="toastContainer" class="toast-container">
@@ -249,39 +518,60 @@
       </div>
     </div>
 
-    <div class="content">
-      <div class="banner-divider-top">
-        <br>
-        <h1>Create a Post</h1>
+    <!-- Header -->
+    <header class="news-header">
+      <img src="unicols.png" class="banner-logo" alt="UNI-COL News" onclick="leaveCreatePage()">
+      <h1 id="pageHeading">Create a post</h1>
+      <div class="header-actions">
+        <button type="button" class="header-btn" onclick="leaveCreatePage()">Back to news</button>
       </div>
-      <div class="inner-content">
-        
-        <div class="post-form">
+    </header>
 
-          <label>Post Title</label>
-          <input type="text" id="title" placeholder="Enter Headline">
+    <!-- Main Layout -->
+    <div class="create-layout">
 
-          <label>Post Content</label>
-          <div class="editor-toolbar">
-            <button type="button" id="boldBtn" onclick="formatText('bold')"><b>B</b></button>
-            <button type="button" id="italicBtn" onclick="formatText('italic')"><i>I</i></button>
-            <button type="button" id="underlineBtn" onclick="formatText('underline')"><u>U</u></button>
-            <button type="button" onclick="addLink()">Link</button>
-            <button type="button" class="image-upload-btn" title="Insert Image">
-              Image
-              <input type="file" accept="image/*" onchange="insertImage(this)">
-            </button>
-            <button type="button" onclick="deleteSelectedImage()" id="deleteImgBtn" style="display:none; background:#ff6b6b; color:white;">Delete</button>
+      <!-- Left: title + content -->
+      <main class="panel">
+        <div class="field">
+          <label class="field-label" for="title">Title</label>
+          <input type="text" id="title" class="text-input" placeholder="Enter headline">
+        </div>
+
+        <div class="field">
+          <span class="field-label">Content</span>
+          <div class="editor-shell">
+            <div class="editor-toolbar">
+              <button type="button" id="boldBtn" onclick="formatText('bold')" aria-label="Bold"><b>B</b></button>
+              <button type="button" id="italicBtn" onclick="formatText('italic')" aria-label="Italic"><i>I</i></button>
+              <button type="button" id="underlineBtn" onclick="formatText('underline')" aria-label="Underline"><u>U</u></button>
+              <span class="toolbar-divider"></span>
+              <button type="button" onclick="addLink()">Link</button>
+              <button type="button" class="image-upload-btn" title="Insert image">
+                Image
+                <input type="file" accept="image/*" onchange="insertImage(this)">
+              </button>
+              <button type="button" class="toolbar-delete" onclick="deleteSelectedImage()" id="deleteImgBtn" style="display:none;">Delete image</button>
+            </div>
+            <div id="editor" class="editor" contenteditable="true" data-placeholder="Write the news content here"></div>
           </div>
+        </div>
+      </main>
 
-          <div id="editor" class="editor" contenteditable="true" data-placeholder="Write the news content here"></div>
+      <!-- Right: settings + publish -->
+      <aside class="panel panel-side">
+        <div class="field">
+          <span class="field-label">Banner image</span>
+          <img id="bannerPreview" alt="Banner preview" style="display:none;">
+          <label class="file-drop">
+            Choose a banner image
+            <input type="file" id="banner" accept="image/*">
+          </label>
+          <p class="field-hint">Shown on the news card and at the top of the post.</p>
+        </div>
 
-          <label>Banner Image</label>
-          <img id="bannerPreview" style="max-width:100%; display:none;">
-          <input type="file" id="banner" accept="image/*">
-
-          <label>College</label>
-          <select id="collegeSelect">
+        <div class="field">
+          <label class="field-label" for="collegeSelect">Campus</label>
+          <select id="collegeSelect" class="field-select">
             <option value="prmsuIba">PRMSU IBA</option>
             <option value="prmsuBotolan">PRMSU BOTOLAN</option>
             <option value="macsatIba">MACSAT IBA</option>
@@ -293,13 +583,17 @@
             <option value="gcGapo">GC OLONGAPO</option>
             <option value="lyceumBotolan">LYCEUM BOTOLAN</option>
           </select>
+        </div>
 
-          <label>Department/Course</label>
-          <select id="courseSelect">
-            <option value="">NONE</option>
+        <div class="field">
+          <label class="field-label" for="courseSelect">Department</label>
+          <select id="courseSelect" class="field-select">
+            <option value="">None</option>
           </select>
+        </div>
 
-          <label>Tags</label>
+        <div class="field">
+          <span class="field-label">Tags</span>
           <div class="tag-chips" id="tagChips">
             <button type="button" data-tag="event" class="tag-chip">Event</button>
             <button type="button" data-tag="announcement" class="tag-chip">Announcement</button>
@@ -308,37 +602,53 @@
             <button type="button" data-tag="sports" class="tag-chip">Sports</button>
             <button type="button" data-tag="misc" class="tag-chip">Misc</button>
           </div>
+          <p class="field-hint">Pick as many as apply.</p>
           <input type="hidden" id="tagInput" value="">
-
-          <button onclick="publishPost()">Publish</button>
-
         </div>
 
-      </div>
-      <div class="banner-divider-bottom"></div>
+        <button type="button" class="publish-btn" id="publishBtn" onclick="publishPost()">Publish</button>
+      </aside>
+
     </div>
 
     <!-- Image Preview Modal -->
     <div id="imagePreviewModal" class="image-preview-modal" onclick="closeImagePreview()">
-      <button class="image-preview-close" onclick="closeImagePreview()">×</button>
+      <button class="image-preview-close" onclick="closeImagePreview()">&times;</button>
       <img id="previewModalImg" src="" alt="" onclick="event.stopPropagation()">
     </div>
 
+    <!-- Confirm Modal -->
     <div id="confirmModal" class="confirm-modal hidden">
       <div class="confirm-panel">
-
-        <p id="confirmText" class="confirm-text">
-        </p>
-
+        <p id="confirmText" class="confirm-text"></p>
         <div class="confirm-buttons">
           <button id="confirmYes">OK</button>
           <button id="confirmNo">Cancel</button>
         </div>
-
       </div>
     </div>
 
+    <script>
+      // Go back to the campus news page (or the campus list if no campus is known)
+      function leaveCreatePage() {
+        const p = new URLSearchParams(window.location.search);
+        // Edit links don't carry ?college=, so fall back to the post's campus
+        const college = p.get('college') ||
+          (p.get('edit') ? document.getElementById('collegeSelect').value : '');
+        window.location.href = college
+          ? 'NEWS.html?college=' + encodeURIComponent(college)
+          : 'index.html';
+      }
+
+      // Edit mode: relabel the page and the main button
+      if (new URLSearchParams(window.location.search).get('edit')) {
+        document.title = 'Edit post';
+        document.getElementById('pageHeading').textContent = 'Edit post';
+        document.getElementById('publishBtn').textContent = 'Save changes';
+      }
+    </script>
     <script src="createpost.js"></script>
     <script src="news.js"></script>
+    <script src="functions.js"></script>
   </body>
 </html>

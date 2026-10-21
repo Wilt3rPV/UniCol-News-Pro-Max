@@ -127,9 +127,13 @@ document.addEventListener('keydown', (e) => {
 // ============================================================
 function renderAboutLoading() {
   document.getElementById('aboutBody').innerHTML = `
-    <div style="text-align:center;padding:40px 20px;color:#888;">
-      <div style="width:32px;height:32px;border:3px solid #eee;border-top-color:#667eea;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
-      <div style="font-size:14px;">Loading...</div>
+    <div class="about-skeleton" aria-hidden="true">
+      <div class="skel skel-heading"></div>
+      <div class="skel skel-line w100"></div>
+      <div class="skel skel-line w90"></div>
+      <div class="skel skel-line w100"></div>
+      <div class="skel skel-line w75"></div>
+      <div class="skel skel-line w55"></div>
     </div>
   `;
 }
@@ -144,10 +148,12 @@ function renderAboutView() {
   ` : '';
 
   body.innerHTML = `
-    <h3 class="about-heading">${escapeHtml(aboutData.heading)}</h3>
-    <div class="about-description">${escapeHtml(aboutData.description)}</div>
-    ${aboutData.updated_at ? `<div class="about-updated">Last updated: ${formatAboutDate(aboutData.updated_at)}</div>` : ''}
-    ${adminControls}
+    <div class="about-loaded">
+      <h3 class="about-heading">${escapeHtml(aboutData.heading)}</h3>
+      <div class="about-description">${escapeHtml(aboutData.description)}</div>
+      ${aboutData.updated_at ? `<div class="about-updated">Last updated: ${formatAboutDate(aboutData.updated_at)}</div>` : ''}
+      ${adminControls}
+    </div>
   `;
 }
 

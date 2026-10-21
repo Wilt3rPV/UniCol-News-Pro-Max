@@ -233,12 +233,14 @@ function renderPost(post) {
   );
 
   container.innerHTML = `
-    ${bannerHtml}
-    <h2>${post.title}</h2>
-    <small class="post-date">${dateDisplay}</small>
-    ${tagBadge}
-    <div class="post-content">${processedContent}</div>
-    ${adminButtons}
+    <div class="post-loaded">
+      ${bannerHtml}
+      <h2>${post.title}</h2>
+      <small class="post-date">${dateDisplay}</small>
+      ${tagBadges}
+      <div class="post-content">${processedContent}</div>
+      ${adminButtons}
+    </div>
   `;
 }
 

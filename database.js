@@ -25,7 +25,7 @@ async function checkAuth() {
   const adminData = localStorage.getItem('unicol_admin');
   if (adminData) {
     const parsed = JSON.parse(adminData);
-    currentUser = { email: parsed.email };
+    currentUser = { email: parsed.email, position: parsed.position };
     isAdmin = true;
   } else {
     currentUser = null;
@@ -44,7 +44,9 @@ async function signIn(email, password) {
 
   currentUser = result.data.user;
   isAdmin = result.data.isAdmin;
-  localStorage.setItem('unicol_admin', JSON.stringify({ email: currentUser.email }));
+  // Position comes from the backend if it sends one (position or role); otherwise the UI shows "Admin"
+  currentUser.position = currentUser.position || currentUser.role || 'Admin';
+  localStorage.setItem('unicol_admin', JSON.stringify({ email: currentUser.email, position: currentUser.position }));
   updateUIForAuth();
   return { user: currentUser };
 }

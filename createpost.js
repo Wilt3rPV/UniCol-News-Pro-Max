@@ -363,13 +363,31 @@ function setupEditorImageHandler() {
     }
   });
 
-  document.addEventListener('keydown', function(e) {
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedImage) {
-      e.preventDefault();
-      selectedImage.remove();
+  // Clicking anywhere outside the editor/toolbar button deselects the image
+  document.addEventListener('mousedown', function(e) {
+    if (!selectedImage) return;
+    if (editor.contains(e.target) || (deleteBtn && deleteBtn.contains(e.target))) return;
+    selectedImage.classList.remove('selected');
+    selectedImage = null;
+    if (deleteBtn) deleteBtn.style.display = 'none';
+  });
+
+  // Dragging an image to move it: drop the stale selection (the browser may recreate the node)
+  editor.addEventListener('dragstart', function(e) {
+    if (e.target.tagName === 'IMG') {
+      e.target.classList.remove('selected');
       selectedImage = null;
       if (deleteBtn) deleteBtn.style.display = 'none';
     }
+  });
+
+  // Delete/Backspace removes ONLY the selected image, and only while the editor has focus
+  editor.addEventListener('keydown', function(e) {
+    if ((e.key !== 'Delete' && e.key !== 'Backspace') || !selectedImage) return;
+    e.preventDefault();
+    if (editor.contains(selectedImage)) selectedImage.remove();
+    selectedImage = null;
+    if (deleteBtn) deleteBtn.style.display = 'none';
   });
 }
 
@@ -411,7 +429,14 @@ async function publishPost() {
   const selectedCollege = document.getElementById("collegeSelect")?.value;
   const selectedCourse = document.getElementById("courseSelect")?.value;
   const title = document.getElementById('title')?.value?.trim();
-  const content = document.getElementById('editor')?.innerHTML;
+  const editorEl = document.getElementById('editor');
+  let content = editorEl?.innerHTML;
+  if (editorEl) {
+    const clone = editorEl.cloneNode(true);
+    clone.querySelectorAll('img.selected').forEach(i => i.classList.remove('selected'));
+    clone.querySelectorAll('img[class=""]').forEach(i => i.removeAttribute('class'));
+    content = clone.innerHTML;
+  }
   const bannerInput = document.getElementById('banner');
   const selectedTags = document.getElementById("tagInput")?.value || "";
 
@@ -550,7 +575,10 @@ function addLink() {
 const editor = document.getElementById("editor");
 if (editor) {
   editor.addEventListener("input", () => {
-    if (editor.innerHTML === "<br>" || editor.innerHTML === "&nbsp;" || editor.textContent.trim() === "") {
+    // Only reset the placeholder when the editor is truly empty (no text AND no images/media).
+    // Previously an image-only post counted as "empty", so moving/deleting one image wiped them all.
+    const hasMedia = editor.querySelector("img, video, iframe, hr");
+    if (!hasMedia && (editor.innerHTML === "<br>" || editor.innerHTML === "&nbsp;" || editor.textContent.trim() === "")) {
       editor.innerHTML = "";
     }
   });

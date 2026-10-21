@@ -2020,3 +2020,68 @@ body.campus-lyceumBotolan .bg-image {
   transform: translateY(0);
   filter: brightness(0.95);
 }
+
+/* =========================
+   Shared shimmer skeletons (same look as the academic calendar loader)
+   ========================= */
+@keyframes skelShimmer {
+  from { background-position: 200% 0; }
+  to   { background-position: -200% 0; }
+}
+
+.skel {
+  background: linear-gradient(90deg, #f3f3f3 25%, #fafafa 50%, #f3f3f3 75%);
+  background-size: 200% 100%;
+  animation: skelShimmer 1.4s ease-in-out infinite;
+  border-radius: 8px;
+}
+
+.skel-line { height: 14px; margin-bottom: 12px; }
+.skel-line.w100 { width: 100%; }
+.skel-line.w90  { width: 90%; }
+.skel-line.w75  { width: 75%; }
+.skel-line.w55  { width: 55%; }
+
+/* Post card skeleton (matches .news-card size) */
+.news-card-skeleton {
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  width: 100%;
+  height: 550px;
+  display: flex;
+  flex-direction: column;
+}
+.news-card-skeleton .skel-img { height: 65%; border-radius: 0; }
+.news-card-skeleton .skel-body {
+  height: 35%;
+  padding: 24px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+.news-card-skeleton .skel-body .skel { height: 16px; margin: 0; }
+
+/* Post modal / post page skeleton */
+.post-skeleton {
+  animation: postCardPopIn 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  padding: 4px 0;
+}
+.post-skeleton .skel-banner { height: clamp(180px, 30vw, 300px); border-radius: 12px; margin-bottom: 18px; }
+.post-skeleton .skel-title  { height: 30px; width: 70%; margin-bottom: 12px; }
+.post-skeleton .skel-date   { height: 14px; width: 35%; margin-bottom: 24px; }
+
+/* About panel skeleton + load-in (same pop-in as the post modal content) */
+.about-skeleton { animation: postCardPopIn 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.about-skeleton .skel-heading { height: 24px; width: 65%; margin-bottom: 18px; }
+.about-loaded {
+  animation: postCardPopIn 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  transform-origin: center center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skel, .post-skeleton, .about-skeleton, .about-loaded { animation: none; }
+}
