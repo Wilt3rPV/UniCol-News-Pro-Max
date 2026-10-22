@@ -331,6 +331,43 @@ let calendarFocusLast = false;
 const calendarSaveTimers = {};
 const CALENDAR_MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
+// ------------------------------------------------------------
+// DATE CLEANUP - dates imported from Google Sheets can arrive with a time
+// (e.g. "2026-03-10T16:00:00.000Z"). These helpers drop the time part.
+// ------------------------------------------------------------
+const ISO_WITH_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+const TRAILING_TIME = /[,\s]+\d{1,2}:\d{2}(:\d{2})?(\.\d+)?\s*([AP]M)?(\s*(Z|[+-]\d{2}:?\d{2}))?$/i;
+
+// Returns the date without any time. ISO timestamps become YYYY-MM-DD (in the viewer's local time,
+// so a sheet date stored as local midnight doesn't slip back a day); other text just loses a trailing time.
+function stripTime(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (ISO_WITH_TIME.test(raw)) {
+    const d = new Date(raw);
+    if (!isNaN(d)) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+  }
+  return raw.replace(TRAILING_TIME, '');
+}
+
+// Calendar tiles read best as "Mar 10"
+function calendarDateText(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (ISO_WITH_TIME.test(raw)) {
+    const d = new Date(raw);
+    if (!isNaN(d)) {
+      return CALENDAR_MONTHS[d.getMonth()].charAt(0).toUpperCase() + CALENDAR_MONTHS[d.getMonth()].slice(1) + ' ' + d.getDate();
+    }
+  }
+  const plain = raw.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (plain) {
+    const mo = CALENDAR_MONTHS[Number(plain[2]) - 1];
+    if (mo) return mo.charAt(0).toUpperCase() + mo.slice(1) + ' ' + Number(plain[3]);
+  }
+  return stripTime(raw);
+}
+
 // Turns free text like "Mar 10", "March 10-12" or "10 March" into tile parts.
 // Returns null for anything else (e.g. "Second semester").
 function parseCalendarDate(text) {
@@ -374,6 +411,7 @@ async function renderCalendar() {
     '<div class="cal-skeleton"></div><div class="cal-skeleton"></div><div class="cal-skeleton"></div>';
 
   calendarRows = await loadCalendar();
+  calendarRows.forEach(r => { r.date = calendarDateText(r.date); });   // no time in calendar dates
   calendarRowsEl.innerHTML = '';
 
   if (countEl) {
@@ -588,7 +626,7 @@ async function showPostModal(postId) {
         <div class="post-loaded">
           ${bannerHtml}
           <h2>${post.title}</h2>
-          <small class="post-date">${post.date}${courseDisplay}</small>
+          <small class="post-date">${stripTime(post.date)}${courseDisplay}</small>
           <div>${post.content}</div>
           ${adminButtons}
         </div>

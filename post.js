@@ -215,7 +215,7 @@ function renderPost(post) {
 
   // Format course name for display
   const courseDisplay = post.course ? formatCourseName(post.course) : '';
-  const dateDisplay = post.date + (courseDisplay ? ' | ' + courseDisplay : '');
+  const dateDisplay = stripTime(post.date) + (courseDisplay ? ' | ' + courseDisplay : '');
 
   // Process content - fix image inline styles
   let processedContent = post.content;
@@ -242,6 +242,21 @@ function renderPost(post) {
       ${adminButtons}
     </div>
   `;
+}
+
+// Dates imported from Google Sheets can arrive with a time (e.g. "2026-03-10T16:00:00.000Z"); drop it.
+const ISO_WITH_TIME = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/;
+const TRAILING_TIME = /[,\s]+\d{1,2}:\d{2}(:\d{2})?(\.\d+)?\s*([AP]M)?(\s*(Z|[+-]\d{2}:?\d{2}))?$/i;
+
+function stripTime(value) {
+  const raw = String(value == null ? '' : value).trim();
+  if (ISO_WITH_TIME.test(raw)) {
+    const d = new Date(raw);
+    if (!isNaN(d)) {
+      return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    }
+  }
+  return raw.replace(TRAILING_TIME, '');
 }
 
 // Helper function to format course code to readable name

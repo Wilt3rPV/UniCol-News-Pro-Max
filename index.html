@@ -4,316 +4,431 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>UniCol News</title>
-    <link rel="stylesheet" href="style.css">
-    <script src="database.js"></script>
     <style>
-      * { 
-        box-sizing: border-box; 
-        margin: 0; 
-        padding: 0; 
-      }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
 
       html, body {
         min-height: 100vh;
         font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-        background: #f5f5f5;
+        background: #f5f6fa;
+        color: #1a1a1a;
       }
 
+      /* Page fade-in (functions.js adds .loaded) */
       body {
         opacity: 0;
-        transform: translateY(-30px);
-        transition: opacity 0.4s ease-out, transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+        transform: translateY(-20px);
+        transition: opacity 0.4s ease-out, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
       }
-
-      body.loaded {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      body.loaded { opacity: 1; transform: translateY(0); }
 
       /* =========================
-         HEADER / LOGO SECTION
+         HEADER
          ========================= */
       .menu-header {
-        text-align: center;
-        padding: 10px 20px 0px;
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        padding: 18px 20px 64px;
+        text-align: center;
         position: relative;
-        overflow: hidden;
-      }
-
-      .menu-header::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        opacity: 0.5;
       }
 
       .menu-logo {
-        width: 280px;
+        width: 210px;
+        max-width: 60%;
         height: auto;
         display: block;
         margin: 0 auto;
         filter: drop-shadow(0 4px 12px rgba(0,0,0,0.3));
-        position: relative;
-        z-index: 1;
-        animation: logoIn 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards, logoFloat 6s ease-in-out infinite;
-        animation-delay: 0.2s, 0.6s;
-        opacity: 0;
-      }
-
-      @keyframes logoIn {
-        from { opacity: 0; transform: scale(0.95) translateY(10px); }
-        to { opacity: 1; transform: scale(1) translateY(0); }
       }
 
       .menu-tagline {
-        margin-top: 16px;
-        color: rgba(255,255,255,0.9);
-        font-size: 18px;
+        margin-top: 8px;
+        color: #fff;
+        font-size: 20px;
         font-weight: 500;
-        position: relative;
-        z-index: 1;
-        animation: fadeInUp 0.6s ease forwards;
-        animation-delay: 0.5s;
-        opacity: 0;
-      }
-
-      @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(15px); }
-        to { opacity: 1; transform: translateY(0); }
-      }
-
-      @keyframes logoFloat {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
       }
 
       /* =========================
-         COLLEGE GRID
+         SEARCH (overlaps header)
          ========================= */
-      .college-grid {
-        max-width: 1600px;
-        margin: 0 auto;
-        padding: 50px 24px 60px;
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 24px;
-      }
-
-      .college-card {
+      .search-wrap {
+        max-width: 640px;
+        margin: -34px auto 0;
+        padding: 0 20px;
         position: relative;
-        height: 300px;
-        border: none;
-        border-radius: 16px;
-        cursor: pointer;
-        overflow: hidden;
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.05), 0 10px 20px rgba(0,0,0,0.08);
-        transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), 
-                    box-shadow 0.35s cubic-bezier(0.22, 1, 0.36, 1);
-
-        transform: translateY(20px);
-        opacity: 0;
-        animation: fadeIn 0.5s ease forwards;
-      }
-
-      .college-card:nth-child(1) { animation-delay: 0.1s; }
-      .college-card:nth-child(2) { animation-delay: 0.15s; }
-      .college-card:nth-child(3) { animation-delay: 0.2s; }
-      .college-card:nth-child(4) { animation-delay: 0.25s; }
-      .college-card:nth-child(5) { animation-delay: 0.3s; }
-      .college-card:nth-child(6) { animation-delay: 0.35s; }
-      .college-card:nth-child(7) { animation-delay: 0.4s; }
-      .college-card:nth-child(8) { animation-delay: 0.45s; }
-      .college-card:nth-child(9) { animation-delay: 0.5s; }
-      .college-card:nth-child(10) { animation-delay: 0.55s; }
-
-      @keyframes fadeIn {
-        to { opacity: 1; }
-      }
-
-      .college-card:hover {
-        transform: translateY(10px) scale(1.01);
-        box-shadow: 0 12px 24px rgba(0,0,0,0.15), 0 4px 8px rgba(0,0,0,0.1);
-      }
-
-      .college-card:active {
-        transform: translateY(6px) scale(0.98);
-      }
-
-      .college-card::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(
-          to top,
-          rgba(0,0,0,0.65) 0%,
-          rgba(0,0,0,0.3) 40%,
-          rgba(0,0,0,0.1) 100%
-        );
-        transition: opacity 0.3s ease;
-      }
-
-      .college-card:hover::before {
-        background: linear-gradient(
-          to top,
-          rgba(0,0,0,0.75) 0%,
-          rgba(0,0,0,0.4) 50%,
-          rgba(0,0,0,0.15) 100%
-        );
-      }
-
-      .college-card span {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        padding: 20px;
-        color: #fff;
-        font-size: 16px;
-        font-weight: 700;
-        text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-        line-height: 1.4;
-        font-size: 25px;
-        text-align: center;
         z-index: 2;
       }
 
-      /* Campus background images */
-      .card-prmsuIba { background-image: url("prmsu.png"); }
-      .card-macsatIba { background-image: url("scfront2.png"); }
-      .card-prmsuBotolan { background-image: url("botolans.png"); }
-      .card-ccGapo { background-image: url("colom.png"); }
-      .card-prmsuMan { background-image: url("prmsumas.png"); }
-      .card-prmsuCruz { background-image: url("prmsucruz.png"); }
-      .card-prmsuCaste { background-image: url("prmsucaste.png"); }
-      .card-ccCruz { background-image: url("colom2.png"); }
-      .card-gcGapo { background-image: url("gcgapo.png"); }
-      .card-lyceumBotolan { background-image: url("lie.png"); }
+      .search-box {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: #fff;
+        border-radius: 14px;
+        padding: 0 16px;
+        box-shadow: 0 8px 24px rgba(40, 40, 90, 0.18);
+        border: 2px solid transparent;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .search-box:focus-within {
+        border-color: #667eea;
+        box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+      }
+
+      .search-box svg { flex: 0 0 auto; width: 24px; height: 24px; stroke: #888; }
+
+      .search-box input {
+        flex: 1;
+        min-width: 0;
+        border: none;
+        outline: none;
+        background: transparent;
+        font: inherit;
+        font-size: 19px;
+        padding: 20px 0;
+        color: #222;
+      }
+
+      .search-clear {
+        border: none;
+        background: #eee;
+        color: #666;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        font-size: 14px;
+        cursor: pointer;
+        display: none;
+      }
+      .search-clear.visible { display: block; }
+      .search-clear:hover { background: #ddd; }
 
       /* =========================
-         FOOTER
+         SCHOOL GROUPS
          ========================= */
-      .menu-footer {
-        text-align: center;
-        padding: 30px 20px;
-        color: #888;
-        font-size: 14px;
-        border-top: 1px solid #e0e0e0;
+      .groups {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 28px 24px 56px;
       }
+
+      .school-group { margin-bottom: 34px; }
+
+      .school-head {
+        display: flex;
+        align-items: baseline;
+        gap: 10px;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #e8eaf6;
+      }
+
+      .school-head h2 { font-size: 25px; font-weight: 800; letter-spacing: -0.01em; }
+      .school-head span { font-size: 16px; color: #666; }
+
+      .campus-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 24px;
+      }
+
+      /* =========================
+         CAMPUS CARD
+         ========================= */
+      .campus-card {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 14px;
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.3s ease;
+        animation: cardIn 0.45s ease backwards;
+      }
+
+      @keyframes cardIn {
+        from { opacity: 0; transform: translateY(14px); }
+        to   { opacity: 1; transform: translateY(0); }
+      }
+
+      .campus-card:hover,
+      .campus-card:focus-visible {
+        transform: translateY(-4px);
+        box-shadow: 0 12px 28px rgba(0,0,0,0.14);
+        outline: none;
+      }
+      .campus-card:focus-visible { box-shadow: 0 0 0 3px #667eea, 0 12px 28px rgba(0,0,0,0.14); }
+      .campus-card:active { transform: translateY(-1px) scale(0.99); }
+
+      /* Photo with shimmer placeholder while it loads */
+      .campus-photo {
+        position: relative;
+        height: 200px;
+        background: linear-gradient(90deg, #f3f3f3 25%, #fafafa 50%, #f3f3f3 75%);
+        background-size: 200% 100%;
+        animation: shimmer 1.4s ease-in-out infinite;
+        overflow: hidden;
+      }
+
+      .campus-photo.loaded { animation: none; background: #eee; }
+
+      .campus-photo img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+        opacity: 0;
+        transition: opacity 0.4s ease, transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+
+      .campus-photo.loaded img { opacity: 1; }
+      .campus-card:hover .campus-photo img { transform: scale(1.05); }
+
+      @keyframes shimmer {
+        from { background-position: 200% 0; }
+        to   { background-position: -200% 0; }
+      }
+
+      .campus-info { padding: 18px 20px 16px; flex: 1; }
+
+      .campus-school {
+        font-size: 14px;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #666;
+      }
+
+      .campus-name {
+        margin-top: 4px;
+        font-size: 28px;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        line-height: 1.25;
+      }
+
+      /* Campus colour strip (uses each campus's own theme colours) */
+      .campus-accent { height: 7px; }
+
+      /* =========================
+         EMPTY SEARCH RESULT
+         ========================= */
+      .no-results {
+        display: none;
+        text-align: center;
+        padding: 50px 20px;
+        font-size: 17px;
+        color: #666;
+      }
+      .no-results.visible { display: block; }
+      .no-results strong { display: block; font-size: 20px; color: #666; margin-bottom: 4px; }
 
       /* =========================
          RESPONSIVE
          ========================= */
-      @media (max-width: 900px) {
-        .college-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 20px;
-          padding: 40px 20px 50px;
-        }
+      @media (max-width: 640px) {
+        .menu-header { padding: 14px 16px 56px; }
+        .menu-logo { width: 150px; }
+        .menu-tagline { font-size: 17px; }
+        .groups { padding: 22px 16px 40px; }
+        .school-group { margin-bottom: 26px; }
+        .school-head h2 { font-size: 21px; }
 
-        .college-card {
-          height: 140px;
-        }
+        .campus-grid { grid-template-columns: 1fr; gap: 14px; }
 
-        .college-card span {
-          font-size: 14px;
-          padding: 16px;
+        /* Compact rows: small photo on the left */
+        .campus-card { flex-direction: row; align-items: stretch; }
+        .campus-photo { flex: 0 0 120px; height: auto; min-height: 100px; }
+        .campus-info {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          padding: 14px 16px;
         }
+        .campus-name { font-size: 23px; }
+        .campus-accent { width: 7px; height: auto; flex: 0 0 7px; }
+        .campus-card { flex-wrap: nowrap; }
       }
 
-      @media (max-width: 520px) {
-        .menu-header {
-          padding: 40px 20px 24px;
-        }
-
-        .menu-logo {
-          width: 140px;
-        }
-
-        .menu-tagline {
-          font-size: 15px;
-        }
-
-        .college-grid {
-          grid-template-columns: 1fr;
-          gap: 16px;
-          padding: 30px 16px 40px;
-        }
-
-        .college-card {
-          height: 120px;
-          border-radius: 12px;
-        }
-
-        .college-card span {
-          font-size: 14px;
-          padding: 14px;
-        }
+      @media (prefers-reduced-motion: reduce) {
+        body, .campus-card, .campus-photo img { transition: none; animation: none; }
+        .campus-photo { animation: none; }
+        .campus-card { animation: none; }
       }
     </style>
-  <base target="_blank">
-</head>
+  </head>
   <body>
-    <!-- Header with Logo -->
     <header class="menu-header">
       <img src="unicols.png" class="menu-logo" alt="UNI-COL News">
-      <p class="menu-tagline">Select your campus to view news</p>
+      <p class="menu-tagline">Pick your campus to read the news</p>
     </header>
 
-    <!-- College Grid -->
-    <div class="college-grid">
-      <button class="college-card card-prmsuIba" onclick="window.location.href='NEWS.html?college=prmsuIba'">
-        <span>President Ramon Magsaysay State University - Iba Campus</span>
-      </button>
-
-      <button class="college-card card-macsatIba" onclick="window.location.href='NEWS.html?college=macsatIba'">
-        <span>Mirco Asia College of Science And Technology - Iba Campus</span>
-      </button>
-
-      <button class="college-card card-prmsuBotolan" onclick="window.location.href='NEWS.html?college=prmsuBotolan'">
-        <span>President Ramon Magsaysay State University - Botolan Campus</span>
-      </button>
-
-      <button class="college-card card-ccGapo" onclick="window.location.href='NEWS.html?college=ccGapo'">
-        <span>Columban College - Olongapo Campus</span>
-      </button>
-
-      <button class="college-card card-prmsuMan" onclick="window.location.href='NEWS.html?college=prmsuMan'">
-        <span>President Ramon Magsaysay State University - Masinloc Campus</span>
-      </button>
-
-      <button class="college-card card-prmsuCruz" onclick="window.location.href='NEWS.html?college=prmsuCruz'">
-        <span>President Ramon Magsaysay State University - Sta. Cruz Campus</span>
-      </button>
-
-      <button class="college-card card-prmsuCaste" onclick="window.location.href='NEWS.html?college=prmsuCaste'">
-        <span>President Ramon Magsaysay State University - Castillejos Campus</span>
-      </button>
-
-      <button class="college-card card-ccCruz" onclick="window.location.href='NEWS.html?college=ccCruz'">
-        <span>Columban College - Sta. Cruz Campus</span>
-      </button>
-
-      <button class="college-card card-gcGapo" onclick="window.location.href='NEWS.html?college=gcGapo'">
-        <span>Gordon College - Olongapo Campus</span>
-      </button>
-
-      <button class="college-card card-lyceumBotolan" onclick="window.location.href='NEWS.html?college=lyceumBotolan'">
-        <span>Lyceum Of Western Luzon - Botolan Campus</span>
-      </button>
+    <div class="search-wrap">
+      <label class="search-box">
+        <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="11" cy="11" r="7"></circle>
+          <path d="M20 20l-3.5-3.5"></path>
+        </svg>
+        <input id="campusSearch" type="search" placeholder="Search campus (e.g. PRMSU, Iba, Gordon)" autocomplete="off" aria-label="Search campus">
+        <button id="searchClear" class="search-clear" type="button" aria-label="Clear search">&times;</button>
+      </label>
     </div>
 
-    <!--<footer class="menu-footer">-->
-    <!--  Cabasug Softwares &copy; 2026-->
-    <!--</footer>-->
+    <main id="groups" class="groups"></main>
 
+    <div id="noResults" class="no-results">
+      <strong>No campus found</strong>
+      Try a school name like PRMSU or Columban, or a town like Iba.
+    </div>
+
+    <script>
+      // ------------------------------------------------------------
+      // CAMPUS DATA  (id must match the ?college= values used in NEWS.html / news.js)
+      // ------------------------------------------------------------
+      const schools = [
+        {
+          name: "President Ramon Magsaysay State University",
+          short: "PRMSU",
+          campuses: [
+            { id: "prmsuIba",     name: "Iba",         img: "prmsu.png",       c1: "#4b75fd", c2: "#ffd829" },
+            { id: "prmsuBotolan", name: "Botolan",     img: "botolans.png",    c1: "#961313", c2: "#942525" },
+            { id: "prmsuCaste",   name: "Castillejos", img: "prmsucaste.png",  c1: "#D2B48C", c2: "#D2B48C" },
+            { id: "prmsuMan",     name: "Masinloc",    img: "prmsumas.png",    c1: "#797979", c2: "#555555" },
+            { id: "prmsuCruz",    name: "Sta. Cruz",   img: "prmsucruz.png",   c1: "#4b75fd", c2: "#ffd829" }
+          ]
+        },
+        {
+          name: "Columban College",
+          short: "Columban",
+          campuses: [
+            { id: "ccGapo", name: "Olongapo", img: "colom.png",  c1: "#7797ff", c2: "#f2ff7e" },
+            { id: "ccCruz", name: "Sta. Cruz", img: "colom2.png", c1: "#6580d8", c2: "#dcdfc1" }
+          ]
+        },
+        {
+          name: "Gordon College",
+          short: "Gordon",
+          campuses: [
+            { id: "gcGapo", name: "Olongapo", img: "gcgapo.png", c1: "#0c530a", c2: "#ddce00" }
+          ]
+        },
+        {
+          name: "Micro Asia College of Science and Technology",
+          short: "MACSAT",
+          campuses: [
+            { id: "macsatIba", name: "Iba", img: "scfront2.png", c1: "#169c33", c2: "#57ff48" }
+          ]
+        },
+        {
+          name: "Lyceum of Western Luzon",
+          short: "Lyceum",
+          campuses: [
+            { id: "lyceumBotolan", name: "Botolan", img: "lie.png", c1: "#169c33", c2: "#57ff48" }
+          ]
+        }
+      ];
+
+      function esc(str) {
+        return String(str).replace(/[&<>"']/g, ch => (
+          { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[ch]
+        ));
+      }
+
+      // ------------------------------------------------------------
+      // RENDER
+      // ------------------------------------------------------------
+      const groupsEl = document.getElementById("groups");
+      const searchEl = document.getElementById("campusSearch");
+      const clearEl = document.getElementById("searchClear");
+      const noResultsEl = document.getElementById("noResults");
+
+      let cardIndex = 0;
+
+      function cardHtml(school, c) {
+        const delay = (cardIndex++ * 0.04).toFixed(2);
+        return `
+          <a class="campus-card" href="NEWS.html?college=${encodeURIComponent(c.id)}"
+             data-search="${esc((school.name + " " + school.short + " " + c.name).toLowerCase())}"
+             style="animation-delay:${delay}s">
+            <div class="campus-photo">
+              <img src="${esc(c.img)}" alt="" loading="lazy">
+            </div>
+            <div class="campus-info">
+              <div class="campus-school">${esc(school.short)}</div>
+              <div class="campus-name">${esc(c.name)}</div>
+            </div>
+            <div class="campus-accent" style="background:linear-gradient(90deg, ${c.c1}, ${c.c2})"></div>
+          </a>`;
+      }
+
+      function render() {
+        groupsEl.innerHTML = schools.map(school => `
+          <section class="school-group" data-school="${esc(school.short)}">
+            <div class="school-head">
+              <h2>${esc(school.name)}</h2>
+              <span>${school.campuses.length} ${school.campuses.length === 1 ? "campus" : "campuses"}</span>
+            </div>
+            <div class="campus-grid">
+              ${school.campuses.map(c => cardHtml(school, c)).join("")}
+            </div>
+          </section>
+        `).join("");
+
+        // Reveal each photo once it has loaded (stops the shimmer)
+        groupsEl.querySelectorAll(".campus-photo").forEach(box => {
+          const img = box.querySelector("img");
+          const done = () => box.classList.add("loaded");
+          if (img.complete && img.naturalWidth) done();
+          else {
+            img.addEventListener("load", done);
+            img.addEventListener("error", done);   // stop shimmering even if the file is missing
+          }
+        });
+      }
+
+      // ------------------------------------------------------------
+      // SEARCH
+      // ------------------------------------------------------------
+      function applySearch() {
+        const q = searchEl.value.trim().toLowerCase();
+        clearEl.classList.toggle("visible", q.length > 0);
+
+        let totalVisible = 0;
+        groupsEl.querySelectorAll(".school-group").forEach(group => {
+          let visibleInGroup = 0;
+          group.querySelectorAll(".campus-card").forEach(card => {
+            const match = !q || card.dataset.search.includes(q);
+            card.style.display = match ? "" : "none";
+            if (match) visibleInGroup++;
+          });
+          group.style.display = visibleInGroup ? "" : "none";
+          totalVisible += visibleInGroup;
+        });
+
+        noResultsEl.classList.toggle("visible", totalVisible === 0);
+      }
+
+      searchEl.addEventListener("input", applySearch);
+
+      clearEl.addEventListener("click", () => {
+        searchEl.value = "";
+        applySearch();
+        searchEl.focus();
+      });
+
+      // Enter opens the first visible campus
+      searchEl.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        const first = Array.from(groupsEl.querySelectorAll(".campus-card"))
+          .find(card => card.style.display !== "none");
+        if (first) first.click();
+      });
+
+      render();
+    </script>
     <script src="functions.js"></script>
   </body>
 </html>

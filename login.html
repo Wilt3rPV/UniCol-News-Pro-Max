@@ -508,7 +508,6 @@
 
         <div class="form-toggle">
           <a onclick="showForgotView()">Forgot password?</a>
-          <a onclick="showRegisterView()">Create admin account</a>
           <div class="divider">or</div>
           <a onclick="goBack()">← Back to campus</a>
         </div>
@@ -551,7 +550,6 @@
         <div class="divider">Admin Tools</div>
 
         <button class="form-button secondary" onclick="showRegisterView()">Register New Admin</button>
-        <button class="form-button secondary" onclick="showAdminCodePanel()" style="margin-top: 10px;">View Active Reset Codes</button>
       </div>
 
       <!-- ========== FORGOT PASSWORD ========== -->
@@ -583,10 +581,6 @@
         <p style="color: #ff6b6b; font-size: 13px; text-align: center; margin: 12px 0;">⚠️ This code expires in 15 minutes</p>
 
         <button class="form-button" onclick="proceedToVerify()">Enter Code</button>
-
-        <div class="form-toggle">
-          <a onclick="showAdminCodePanel()">View all active codes (admin only)</a>
-        </div>
       </div>
 
       <!-- ========== VERIFY CODE ========== -->
@@ -685,6 +679,7 @@
     }
 
     function showRegisterView() {
+      if (!currentUser || !isAdmin) return;
       hideAllViews();
       document.getElementById('registerView').classList.remove('hidden');
       updateBackButton();
@@ -779,8 +774,7 @@
       }
 
       if (!document.getElementById('adminCodePanel').classList.contains('hidden')) {
-        if (resetState.code) showCodeView(resetState.code);
-        else showForgotView();
+        showLoggedInView();
         return;
       }
       if (!document.getElementById('newPasswordView').classList.contains('hidden')) {
@@ -1119,8 +1113,7 @@
     }
 
     function backFromAdminPanel() {
-      if (resetState.code) showCodeView(resetState.code);
-      else showForgotView();
+      showLoggedInView();
     }
 
     /* =========================
